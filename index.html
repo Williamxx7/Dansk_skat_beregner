@@ -35,7 +35,7 @@
     }
 
     header {
-      margin-bottom: 2.5rem;
+      margin-bottom: 2rem;
     }
 
     header h1 {
@@ -53,6 +53,31 @@
       color: var(--muted);
       font-family: 'IBM Plex Mono', monospace;
     }
+
+    .tabs {
+      display: flex;
+      border: 1px solid var(--border);
+      margin-bottom: 1.5rem;
+    }
+
+    .tab {
+      flex: 1;
+      padding: 0.65rem;
+      background: transparent;
+      border: none;
+      border-right: 1px solid var(--border);
+      color: var(--muted);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .tab:last-child { border-right: none; }
+    .tab.active { background: var(--surface); color: var(--accent); }
+    .tab:hover:not(.active) { color: var(--text); }
 
     .input-group {
       margin-bottom: 1.5rem;
@@ -96,14 +121,27 @@
     input[type="number"]::-webkit-outer-spin-button,
     input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
 
-    .currency-label {
+    .unit-label {
       font-family: 'IBM Plex Mono', monospace;
       font-size: 0.8rem;
       color: var(--muted);
       padding-right: 1rem;
+      white-space: nowrap;
     }
 
-    button {
+    .hint {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: -0.8rem;
+      margin-bottom: 1.5rem;
+      padding: 0.55rem 0.8rem;
+      border-left: 2px solid var(--border);
+    }
+
+    .hint .val { color: var(--accent); }
+
+    button.calc-btn {
       width: 100%;
       background: var(--accent);
       color: #0e0e0f;
@@ -118,8 +156,8 @@
       transition: opacity 0.15s;
     }
 
-    button:hover { opacity: 0.88; }
-    button:active { opacity: 0.75; }
+    button.calc-btn:hover { opacity: 0.88; }
+    button.calc-btn:active { opacity: 0.75; }
 
     .result {
       margin-top: 2rem;
@@ -137,8 +175,6 @@
       border-bottom: 1px solid var(--border);
       font-size: 0.82rem;
     }
-
-    .result-row:last-child { border-bottom: none; }
 
     .result-row .label {
       color: var(--muted);
@@ -185,34 +221,72 @@
       <p>AM-bidrag 8% · Personfradrag og kommuneskat kan justeres</p>
     </header>
 
-    <div class="input-group">
-      <label>Bruttoløn</label>
-      <div class="input-wrap">
-        <input type="number" id="bruttoløn" placeholder="0" min="0" step="1">
-        <span class="currency-label">KR</span>
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab active" onclick="skiftTab('bruttolon')">Bruttoløn</button>
+      <button class="tab" onclick="skiftTab('timelon')">Timeløn</button>
+    </div>
+
+    <!-- Bruttoløn input -->
+    <div id="panel-bruttolon">
+      <div class="input-group">
+        <label>Bruttoløn</label>
+        <div class="input-wrap">
+          <input type="number" id="bruttoløn" placeholder="0" min="0" step="1">
+          <span class="unit-label">KR</span>
+        </div>
       </div>
     </div>
 
+    <!-- Timeløn input -->
+    <div id="panel-timelon" style="display:none">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+        <div class="input-group">
+          <label>Timeløn</label>
+          <div class="input-wrap">
+            <input type="number" id="timelon" placeholder="0" min="0" step="1" oninput="opdaterBrutto()">
+            <span class="unit-label">KR/T</span>
+          </div>
+        </div>
+        <div class="input-group">
+          <label>Timer / måned</label>
+          <div class="input-wrap">
+            <input type="number" id="timer" placeholder="0" min="0" step="0.5" oninput="opdaterBrutto()">
+            <span class="unit-label">T</span>
+          </div>
+        </div>
+      </div>
+      <div class="hint" id="brutto-hint" style="display:none">
+        Bruttoløn: <span class="val" id="brutto-hint-val"></span>
+      </div>
+    </div>
+
+    <!-- Indstillinger -->
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1.5rem;">
       <div class="input-group" style="margin-bottom:0">
         <label>Personfradrag</label>
         <div class="input-wrap">
           <input type="number" id="personfradrag" value="5500" min="0" step="100">
-          <span class="currency-label">KR</span>
+          <span class="unit-label">KR</span>
         </div>
       </div>
       <div class="input-group" style="margin-bottom:0">
         <label>Kommuneskat</label>
         <div class="input-wrap">
           <input type="number" id="kommuneskat" value="36" min="0" max="100" step="0.1">
-          <span class="currency-label">%</span>
+          <span class="unit-label">%</span>
         </div>
       </div>
     </div>
 
-    <button onclick="beregn()">Beregn skat</button>
+    <button class="calc-btn" onclick="beregn()">Beregn skat</button>
 
+    <!-- Resultat -->
     <div class="result" id="result">
+      <div class="result-row" id="r-timelon-row" style="display:none">
+        <span class="label" id="r-timelon-label">Timeløn · timer</span>
+        <span class="value" id="r-timelon-val"></span>
+      </div>
       <div class="result-row">
         <span class="label">Bruttoløn</span>
         <span class="value" id="r-brutto"></span>
@@ -255,17 +329,56 @@
   </div>
 
   <script>
+    let aktivTab = 'bruttolon';
+
+    function skiftTab(tab) {
+      aktivTab = tab;
+      document.getElementById('panel-bruttolon').style.display = tab === 'bruttolon' ? 'block' : 'none';
+      document.getElementById('panel-timelon').style.display = tab === 'timelon' ? 'block' : 'none';
+      document.querySelectorAll('.tab').forEach((el, i) => {
+        el.classList.toggle('active', (i === 0 && tab === 'bruttolon') || (i === 1 && tab === 'timelon'));
+      });
+      document.getElementById('result').classList.remove('visible');
+    }
+
+    function opdaterBrutto() {
+      const tl = parseFloat(document.getElementById('timelon').value);
+      const t = parseFloat(document.getElementById('timer').value);
+      const hint = document.getElementById('brutto-hint');
+      if (!isNaN(tl) && !isNaN(t) && tl > 0 && t > 0) {
+        const brutto = tl * t;
+        document.getElementById('brutto-hint-val').textContent = fmt(brutto);
+        hint.style.display = 'block';
+      } else {
+        hint.style.display = 'none';
+      }
+    }
+
     function fmt(n) {
       return n.toLocaleString('da-DK', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' kr';
     }
 
     function beregn() {
-      const bruttoløn = parseFloat(document.getElementById('bruttoløn').value);
+      let bruttoløn;
+
+      if (aktivTab === 'timelon') {
+        const tl = parseFloat(document.getElementById('timelon').value);
+        const t = parseFloat(document.getElementById('timer').value);
+        if (isNaN(tl) || isNaN(t) || tl <= 0 || t <= 0) return;
+        bruttoløn = tl * t;
+
+        document.getElementById('r-timelon-row').style.display = 'flex';
+        document.getElementById('r-timelon-label').textContent = `${tl.toLocaleString('da-DK')} kr/t · ${t.toLocaleString('da-DK')} t`;
+        document.getElementById('r-timelon-val').textContent = fmt(bruttoløn);
+      } else {
+        bruttoløn = parseFloat(document.getElementById('bruttoløn').value);
+        if (isNaN(bruttoløn) || bruttoløn <= 0) return;
+        document.getElementById('r-timelon-row').style.display = 'none';
+      }
+
       const personfradrag = parseFloat(document.getElementById('personfradrag').value) || 5500;
       const kommuneskatPct = parseFloat(document.getElementById('kommuneskat').value) || 36;
       const kommuneskat = kommuneskatPct / 100;
-
-      if (isNaN(bruttoløn) || bruttoløn <= 0) return;
 
       const am_bidrag = bruttoløn * 0.08;
       const efter_am = bruttoløn - am_bidrag;
@@ -304,7 +417,7 @@
       document.getElementById('result').classList.add('visible');
     }
 
-    document.getElementById('bruttoløn').addEventListener('keydown', e => {
+    document.addEventListener('keydown', e => {
       if (e.key === 'Enter') beregn();
     });
   </script>
