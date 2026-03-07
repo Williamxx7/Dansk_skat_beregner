@@ -14,8 +14,9 @@
       --border: #2a2a2e;
       --accent: #c8f135;
       --text: #e8e8e8;
-      --muted: #666;
+      --muted: #555;
       --red: #ff5c5c;
+      --blue: #5cb8ff;
     }
 
     body {
@@ -24,20 +25,13 @@
       font-family: 'IBM Plex Sans', sans-serif;
       min-height: 100vh;
       display: flex;
-      align-items: center;
       justify-content: center;
-      padding: 2rem;
+      padding: 2rem 1rem 4rem;
     }
 
-    .container {
-      width: 100%;
-      max-width: 480px;
-    }
+    .container { width: 100%; max-width: 520px; }
 
-    header {
-      margin-bottom: 2rem;
-    }
-
+    header { margin-bottom: 2rem; }
     header h1 {
       font-family: 'IBM Plex Mono', monospace;
       font-size: 1.1rem;
@@ -45,54 +39,45 @@
       color: var(--accent);
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      margin-bottom: 0.3rem;
+      margin-bottom: 0.25rem;
     }
+    header p { font-size: 0.78rem; color: var(--muted); font-family: 'IBM Plex Mono', monospace; }
 
-    header p {
-      font-size: 0.8rem;
-      color: var(--muted);
-      font-family: 'IBM Plex Mono', monospace;
-    }
-
+    /* ── Tabs ── */
     .tabs {
       display: flex;
       border: 1px solid var(--border);
       margin-bottom: 1.5rem;
     }
-
     .tab {
       flex: 1;
-      padding: 0.65rem;
+      padding: 0.6rem 0.4rem;
       background: transparent;
       border: none;
       border-right: 1px solid var(--border);
       color: var(--muted);
       font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.72rem;
-      letter-spacing: 0.08em;
+      font-size: 0.68rem;
+      letter-spacing: 0.06em;
       text-transform: uppercase;
       cursor: pointer;
       transition: all 0.15s;
     }
-
     .tab:last-child { border-right: none; }
     .tab.active { background: var(--surface); color: var(--accent); }
     .tab:hover:not(.active) { color: var(--text); }
 
-    .input-group {
-      margin-bottom: 1.5rem;
-    }
-
+    /* ── Inputs ── */
+    .input-group { margin-bottom: 1.2rem; }
     label {
       display: block;
-      font-size: 0.72rem;
+      font-size: 0.68rem;
       font-family: 'IBM Plex Mono', monospace;
       color: var(--muted);
       text-transform: uppercase;
       letter-spacing: 0.1em;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.4rem;
     }
-
     .input-wrap {
       display: flex;
       align-items: center;
@@ -100,11 +85,7 @@
       border: 1px solid var(--border);
       transition: border-color 0.2s;
     }
-
-    .input-wrap:focus-within {
-      border-color: var(--accent);
-    }
-
+    .input-wrap:focus-within { border-color: var(--accent); }
     input[type="number"] {
       flex: 1;
       background: transparent;
@@ -112,314 +93,737 @@
       outline: none;
       color: var(--text);
       font-family: 'IBM Plex Mono', monospace;
-      font-size: 1.4rem;
-      padding: 0.8rem 1rem;
+      font-size: 1.3rem;
+      padding: 0.7rem 0.9rem;
       width: 100%;
       -moz-appearance: textfield;
     }
-
     input[type="number"]::-webkit-outer-spin-button,
     input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
-
     .unit-label {
       font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       color: var(--muted);
-      padding-right: 1rem;
+      padding-right: 0.9rem;
       white-space: nowrap;
     }
 
     .hint {
       font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       color: var(--muted);
-      margin-top: -0.8rem;
-      margin-bottom: 1.5rem;
-      padding: 0.55rem 0.8rem;
+      margin-top: -0.5rem;
+      margin-bottom: 1.2rem;
+      padding: 0.5rem 0.7rem;
       border-left: 2px solid var(--border);
     }
-
     .hint .val { color: var(--accent); }
 
-    button.calc-btn {
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.2rem; }
+    .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.8rem; margin-bottom: 1.2rem; }
+
+    .section-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 0.6rem;
+      padding-bottom: 0.4rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* ── Buttons ── */
+    .btn-primary {
       width: 100%;
       background: var(--accent);
       color: #0e0e0f;
       border: none;
       padding: 0.85rem;
       font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       font-weight: 600;
       letter-spacing: 0.1em;
       text-transform: uppercase;
       cursor: pointer;
       transition: opacity 0.15s;
+      margin-bottom: 0.6rem;
     }
+    .btn-primary:hover { opacity: 0.88; }
+    .btn-primary:active { opacity: 0.75; }
 
-    button.calc-btn:hover { opacity: 0.88; }
-    button.calc-btn:active { opacity: 0.75; }
-
-    .result {
-      margin-top: 2rem;
+    .btn-row { display: flex; gap: 0.6rem; margin-bottom: 1.5rem; }
+    .btn-secondary {
+      flex: 1;
+      background: transparent;
+      color: var(--muted);
       border: 1px solid var(--border);
-      display: none;
+      padding: 0.55rem;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.15s;
     }
+    .btn-secondary:hover { color: var(--text); border-color: var(--text); }
+    .btn-secondary.copied { color: var(--accent); border-color: var(--accent); }
 
+    /* ── Result ── */
+    .result { margin-top: 1.5rem; border: 1px solid var(--border); display: none; }
     .result.visible { display: block; }
 
     .result-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 0.75rem 1.1rem;
+      padding: 0.65rem 1rem;
       border-bottom: 1px solid var(--border);
-      font-size: 0.82rem;
+      font-size: 0.8rem;
     }
-
-    .result-row .label {
-      color: var(--muted);
-      font-family: 'IBM Plex Mono', monospace;
-    }
-
-    .result-row .value {
-      font-family: 'IBM Plex Mono', monospace;
-      font-weight: 600;
-    }
-
+    .result-row .label { color: var(--muted); font-family: 'IBM Plex Mono', monospace; }
+    .result-row .value { font-family: 'IBM Plex Mono', monospace; font-weight: 600; }
     .result-row .value.negative { color: var(--red); }
     .result-row .value.positive { color: var(--accent); }
 
     .result-total {
       background: var(--surface);
-      padding: 1rem 1.1rem;
+      padding: 0.9rem 1rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
       border-top: 1px solid var(--accent);
     }
-
     .result-total .label {
       font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.72rem;
+      font-size: 0.68rem;
       text-transform: uppercase;
       letter-spacing: 0.1em;
       color: var(--muted);
     }
-
     .result-total .value {
       font-family: 'IBM Plex Mono', monospace;
-      font-size: 1.5rem;
+      font-size: 1.4rem;
       font-weight: 600;
       color: var(--accent);
     }
+
+    /* ── Chart ── */
+    .chart-section {
+      margin-top: 1.2rem;
+      border: 1px solid var(--border);
+      padding: 1rem;
+      display: none;
+    }
+    .chart-section.visible { display: block; }
+    .chart-title {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.8rem;
+    }
+    .bar-chart { display: flex; flex-direction: column; gap: 0.5rem; }
+    .bar-row { display: flex; align-items: center; gap: 0.7rem; }
+    .bar-row-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.68rem;
+      color: var(--muted);
+      width: 110px;
+      flex-shrink: 0;
+    }
+    .bar-track { flex: 1; background: var(--border); height: 10px; }
+    .bar-fill { height: 100%; transition: width 0.4s ease; }
+    .bar-val {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--muted);
+      width: 42px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    /* ── Sammenlign ── */
+    .compare-section { margin-top: 1.5rem; }
+    .compare-header {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.8rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .compare-toggle {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.62rem;
+      padding: 0.2rem 0.5rem;
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: all 0.15s;
+    }
+    .compare-toggle:hover { color: var(--accent); border-color: var(--accent); }
+    .compare-panel { display: none; }
+    .compare-panel.open { display: block; }
+    .compare-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      margin-top: 0.8rem;
+    }
+    .compare-col { background: var(--bg); padding: 0.7rem 0.8rem; }
+    .compare-col-header {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.62rem;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.6rem;
+    }
+    .compare-row {
+      display: flex;
+      justify-content: space-between;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.68rem;
+      padding: 0.25rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .compare-row:last-child { border-bottom: none; }
+    .compare-row .cl { color: var(--muted); }
+    .compare-row .cv { font-weight: 600; }
+    .compare-row .cv.neg { color: var(--red); }
+    .compare-row .cv.pos { color: var(--accent); }
+
+    /* ── Baglæns ── */
+    .baglaens-result {
+      margin-top: 0.8rem;
+      padding: 0.7rem 0.9rem;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.8rem;
+      display: none;
+    }
+    .baglaens-result.visible { display: block; }
+    .baglaens-result .bl-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.2rem 0;
+    }
+    .baglaens-result .bl-row .bll { color: var(--muted); font-size: 0.7rem; }
+    .baglaens-result .bl-row .blv { font-weight: 600; color: var(--accent); }
   </style>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <h1>Skatteberegner</h1>
-      <p>AM-bidrag 8% · Personfradrag og kommuneskat kan justeres</p>
-    </header>
+<div class="container">
+  <header>
+    <h1>Skatteberegner</h1>
+    <p>AM-bidrag 8% · indstil personfradrag og kommuneskat</p>
+  </header>
 
-    <!-- Tabs -->
-    <div class="tabs">
-      <button class="tab active" onclick="skiftTab('bruttolon')">Bruttoløn</button>
-      <button class="tab" onclick="skiftTab('timelon')">Timeløn</button>
-    </div>
+  <!-- ── Mode tabs ── -->
+  <div class="tabs">
+    <button class="tab active" onclick="skiftTab('bruttolon')">Bruttoløn</button>
+    <button class="tab" onclick="skiftTab('timelon')">Timeløn</button>
+    <button class="tab" onclick="skiftTab('baglaens')">Baglæns</button>
+    <button class="tab" onclick="skiftTab('sammenlign')">Sammenlign</button>
+  </div>
 
-    <!-- Bruttoløn input -->
-    <div id="panel-bruttolon">
-      <div class="input-group">
-        <label>Bruttoløn</label>
-        <div class="input-wrap">
-          <input type="number" id="bruttoløn" placeholder="0" min="0" step="1">
-          <span class="unit-label">KR</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Timeløn input -->
-    <div id="panel-timelon" style="display:none">
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
-        <div class="input-group">
-          <label>Timeløn</label>
-          <div class="input-wrap">
-            <input type="number" id="timelon" placeholder="0" min="0" step="1" oninput="opdaterBrutto()">
-            <span class="unit-label">KR/T</span>
-          </div>
-        </div>
-        <div class="input-group">
-          <label>Timer / måned</label>
-          <div class="input-wrap">
-            <input type="number" id="timer" placeholder="0" min="0" step="0.5" oninput="opdaterBrutto()">
-            <span class="unit-label">T</span>
-          </div>
-        </div>
-      </div>
-      <div class="hint" id="brutto-hint" style="display:none">
-        Bruttoløn: <span class="val" id="brutto-hint-val"></span>
-      </div>
-    </div>
-
-    <!-- Indstillinger -->
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1.5rem;">
-      <div class="input-group" style="margin-bottom:0">
-        <label>Personfradrag</label>
-        <div class="input-wrap">
-          <input type="number" id="personfradrag" value="5500" min="0" step="100">
-          <span class="unit-label">KR</span>
-        </div>
-      </div>
-      <div class="input-group" style="margin-bottom:0">
-        <label>Kommuneskat</label>
-        <div class="input-wrap">
-          <input type="number" id="kommuneskat" value="36" min="0" max="100" step="0.1">
-          <span class="unit-label">%</span>
-        </div>
-      </div>
-    </div>
-
-    <button class="calc-btn" onclick="beregn()">Beregn skat</button>
-
-    <!-- Resultat -->
-    <div class="result" id="result">
-      <div class="result-row" id="r-timelon-row" style="display:none">
-        <span class="label" id="r-timelon-label">Timeløn · timer</span>
-        <span class="value" id="r-timelon-val"></span>
-      </div>
-      <div class="result-row">
-        <span class="label">Bruttoløn</span>
-        <span class="value" id="r-brutto"></span>
-      </div>
-      <div class="result-row">
-        <span class="label">AM-bidrag (8%)</span>
-        <span class="value negative" id="r-am"></span>
-      </div>
-      <div class="result-row">
-        <span class="label">Efter AM-bidrag</span>
-        <span class="value" id="r-efter-am"></span>
-      </div>
-      <div id="fradrag-rows" style="display:none">
-        <div class="result-row">
-          <span class="label">Personfradrag</span>
-          <span class="value negative" id="r-fradrag"></span>
-        </div>
-        <div class="result-row">
-          <span class="label">Skattepligtig indkomst</span>
-          <span class="value" id="r-skattepligtig"></span>
-        </div>
-        <div class="result-row">
-          <span class="label" id="r-skat-label">Indkomstskat (36%)</span>
-          <span class="value negative" id="r-skat"></span>
-        </div>
-        <div class="result-row">
-          <span class="label" id="r-efter-skat-label">Efter skat (36%)</span>
-          <span class="value" id="r-efter-skat"></span>
-        </div>
-        <div class="result-row">
-          <span class="label">Efter skat + fradrag</span>
-          <span class="value positive" id="r-efter-skat-fradrag"></span>
-        </div>
-      </div>
-      <div class="result-total">
-        <span class="label">Udbetalt</span>
-        <span class="value" id="r-udbetalt"></span>
+  <!-- ── Bruttoløn panel ── -->
+  <div id="panel-bruttolon">
+    <div class="input-group">
+      <label>Bruttoløn</label>
+      <div class="input-wrap">
+        <input type="number" id="bruttoløn" placeholder="0" min="0" step="1">
+        <span class="unit-label">KR</span>
       </div>
     </div>
   </div>
 
-  <script>
-    let aktivTab = 'bruttolon';
+  <!-- ── Timeløn panel ── -->
+  <div id="panel-timelon" style="display:none">
+    <div class="grid2">
+      <div class="input-group" style="margin-bottom:0">
+        <label>Timeløn</label>
+        <div class="input-wrap">
+          <input type="number" id="timelon" placeholder="0" min="0" step="1" oninput="opdaterBrutto()">
+          <span class="unit-label">KR/T</span>
+        </div>
+      </div>
+      <div class="input-group" style="margin-bottom:0">
+        <label>Timer / måned</label>
+        <div class="input-wrap">
+          <input type="number" id="timer" placeholder="0" min="0" step="0.5" oninput="opdaterBrutto()">
+          <span class="unit-label">T</span>
+        </div>
+      </div>
+    </div>
+    <div class="input-group" style="margin-top:1rem">
+      <label>Tillæg (valgfrit)</label>
+      <div class="input-wrap">
+        <input type="number" id="tillaeg" placeholder="0" min="0" step="1">
+        <span class="unit-label">KR</span>
+      </div>
+    </div>
+    <div class="hint" id="brutto-hint" style="display:none">
+      Bruttoløn inkl. tillæg: <span class="val" id="brutto-hint-val"></span>
+    </div>
+  </div>
 
-    function skiftTab(tab) {
-      aktivTab = tab;
-      document.getElementById('panel-bruttolon').style.display = tab === 'bruttolon' ? 'block' : 'none';
-      document.getElementById('panel-timelon').style.display = tab === 'timelon' ? 'block' : 'none';
-      document.querySelectorAll('.tab').forEach((el, i) => {
-        el.classList.toggle('active', (i === 0 && tab === 'bruttolon') || (i === 1 && tab === 'timelon'));
-      });
-      document.getElementById('result').classList.remove('visible');
-    }
+  <!-- ── Baglæns panel ── -->
+  <div id="panel-baglaens" style="display:none">
+    <div class="input-group">
+      <label>Ønsket udbetalt beløb</label>
+      <div class="input-wrap">
+        <input type="number" id="udbetalt-onsket" placeholder="0" min="0" step="1">
+        <span class="unit-label">KR</span>
+      </div>
+    </div>
+    <div class="input-group">
+      <label>Timer / måned (valgfrit — beregner timeløn)</label>
+      <div class="input-wrap">
+        <input type="number" id="baglaens-timer" placeholder="0" min="0" step="0.5">
+        <span class="unit-label">T</span>
+      </div>
+    </div>
+  </div>
 
-    function opdaterBrutto() {
-      const tl = parseFloat(document.getElementById('timelon').value);
-      const t = parseFloat(document.getElementById('timer').value);
-      const hint = document.getElementById('brutto-hint');
-      if (!isNaN(tl) && !isNaN(t) && tl > 0 && t > 0) {
-        const brutto = tl * t;
-        document.getElementById('brutto-hint-val').textContent = fmt(brutto);
-        hint.style.display = 'block';
-      } else {
-        hint.style.display = 'none';
-      }
-    }
+  <!-- ── Sammenlign panel ── -->
+  <div id="panel-sammenlign" style="display:none">
+    <div class="grid2">
+      <div>
+        <div class="section-label">Løn A</div>
+        <div class="input-group">
+          <label>Bruttoløn</label>
+          <div class="input-wrap">
+            <input type="number" id="cmp-a" placeholder="0" min="0" step="1">
+            <span class="unit-label">KR</span>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="section-label">Løn B</div>
+        <div class="input-group">
+          <label>Bruttoløn</label>
+          <div class="input-wrap">
+            <input type="number" id="cmp-b" placeholder="0" min="0" step="1">
+            <span class="unit-label">KR</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-    function fmt(n) {
-      return n.toLocaleString('da-DK', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' kr';
-    }
+  <!-- ── Feriepenge (alle panels undtagen baglæns/sammenlign) ── -->
+  <div id="feriepenge-row" class="input-group">
+    <label>Feriepenge 12,5% <span style="color:var(--muted);font-size:0.65rem">(tilføjes bruttolønnen)</span></label>
+    <div style="display:flex;align-items:center;gap:0.8rem">
+      <label style="display:flex;align-items:center;gap:0.4rem;margin-bottom:0;cursor:pointer;font-size:0.78rem;text-transform:none;letter-spacing:0">
+        <input type="checkbox" id="feriepenge-check" style="accent-color:var(--accent);width:14px;height:14px">
+        Inkluder feriepenge
+      </label>
+    </div>
+  </div>
 
-    function beregn() {
-      let bruttoløn;
+  <!-- ── Indstillinger ── -->
+  <div class="section-label">Skatteindstillinger</div>
+  <div class="grid2" style="margin-bottom:1.2rem">
+    <div class="input-group" style="margin-bottom:0">
+      <label>Personfradrag</label>
+      <div class="input-wrap">
+        <input type="number" id="personfradrag" value="5500" min="0" step="100">
+        <span class="unit-label">KR</span>
+      </div>
+    </div>
+    <div class="input-group" style="margin-bottom:0">
+      <label>Kommuneskat</label>
+      <div class="input-wrap">
+        <input type="number" id="kommuneskat" value="36" min="0" max="100" step="0.1">
+        <span class="unit-label">%</span>
+      </div>
+    </div>
+  </div>
 
-      if (aktivTab === 'timelon') {
-        const tl = parseFloat(document.getElementById('timelon').value);
-        const t = parseFloat(document.getElementById('timer').value);
-        if (isNaN(tl) || isNaN(t) || tl <= 0 || t <= 0) return;
-        bruttoløn = tl * t;
+  <button class="btn-primary" onclick="beregn()">Beregn skat</button>
 
-        document.getElementById('r-timelon-row').style.display = 'flex';
-        document.getElementById('r-timelon-label').textContent = `${tl.toLocaleString('da-DK')} kr/t · ${t.toLocaleString('da-DK')} t`;
-        document.getElementById('r-timelon-val').textContent = fmt(bruttoløn);
-      } else {
-        bruttoløn = parseFloat(document.getElementById('bruttoløn').value);
-        if (isNaN(bruttoløn) || bruttoløn <= 0) return;
-        document.getElementById('r-timelon-row').style.display = 'none';
-      }
+  <div class="btn-row">
+    <button class="btn-secondary" onclick="delLink(this)" id="del-btn">⬡ Del link</button>
+    <button class="btn-secondary" onclick="nulstil()">↺ Nulstil</button>
+  </div>
 
-      const personfradrag = parseFloat(document.getElementById('personfradrag').value) || 5500;
-      const kommuneskatPct = parseFloat(document.getElementById('kommuneskat').value) || 36;
-      const kommuneskat = kommuneskatPct / 100;
+  <!-- ── Resultat ── -->
+  <div class="result" id="result">
+    <div class="result-row" id="r-timelon-row" style="display:none">
+      <span class="label" id="r-timelon-label"></span>
+      <span class="value" id="r-timelon-val"></span>
+    </div>
+    <div class="result-row" id="r-feriepenge-row" style="display:none">
+      <span class="label">Feriepenge (12,5%)</span>
+      <span class="value positive" id="r-feriepenge-val"></span>
+    </div>
+    <div class="result-row">
+      <span class="label">Bruttoløn</span>
+      <span class="value" id="r-brutto"></span>
+    </div>
+    <div class="result-row">
+      <span class="label">AM-bidrag (8%)</span>
+      <span class="value negative" id="r-am"></span>
+    </div>
+    <div class="result-row">
+      <span class="label">Efter AM-bidrag</span>
+      <span class="value" id="r-efter-am"></span>
+    </div>
+    <div id="fradrag-rows" style="display:none">
+      <div class="result-row">
+        <span class="label">Personfradrag</span>
+        <span class="value negative" id="r-fradrag"></span>
+      </div>
+      <div class="result-row">
+        <span class="label">Skattepligtig indkomst</span>
+        <span class="value" id="r-skattepligtig"></span>
+      </div>
+      <div class="result-row">
+        <span class="label" id="r-skat-label">Indkomstskat (36%)</span>
+        <span class="value negative" id="r-skat"></span>
+      </div>
+      <div class="result-row">
+        <span class="label" id="r-efter-skat-label">Efter skat (36%)</span>
+        <span class="value" id="r-efter-skat"></span>
+      </div>
+      <div class="result-row">
+        <span class="label">Efter skat + fradrag</span>
+        <span class="value positive" id="r-efter-skat-fradrag"></span>
+      </div>
+    </div>
+    <div class="result-row" style="border-bottom:none">
+      <span class="label" style="color:var(--text);font-size:0.72rem">Effektiv skatteprocent</span>
+      <span class="value" id="r-effektiv" style="color:var(--blue)"></span>
+    </div>
+    <div class="result-row" style="border-bottom:none">
+      <span class="label" style="color:var(--muted)">Årlig udbetalt (× 12)</span>
+      <span class="value" id="r-aarlig" style="color:var(--muted)"></span>
+    </div>
+    <div class="result-total">
+      <span class="label">Udbetalt / måned</span>
+      <span class="value" id="r-udbetalt"></span>
+    </div>
+  </div>
 
-      const am_bidrag = bruttoløn * 0.08;
-      const efter_am = bruttoløn - am_bidrag;
+  <!-- ── Baglæns resultat ── -->
+  <div class="baglaens-result" id="baglaens-result">
+    <div class="bl-row"><span class="bll">Nødvendig bruttoløn</span><span class="blv" id="bl-brutto"></span></div>
+    <div class="bl-row"><span class="bll">AM-bidrag</span><span class="blv" id="bl-am" style="color:var(--red)"></span></div>
+    <div class="bl-row"><span class="bll">Indkomstskat</span><span class="blv" id="bl-skat" style="color:var(--red)"></span></div>
+    <div class="bl-row" id="bl-timelon-row" style="display:none"><span class="bll">Nødvendig timeløn</span><span class="blv" id="bl-timelon"></span></div>
+  </div>
 
-      let udbetalt, fradrag = 0, skattepligtig = 0, skat = 0;
+  <!-- ── Søjlediagram ── -->
+  <div class="chart-section" id="chart-section">
+    <div class="chart-title">Fordeling af bruttoløn</div>
+    <div class="bar-chart">
+      <div class="bar-row">
+        <span class="bar-row-label">Udbetalt</span>
+        <div class="bar-track"><div class="bar-fill" id="bar-udbetalt" style="background:var(--accent)"></div></div>
+        <span class="bar-val" id="barpct-udbetalt"></span>
+      </div>
+      <div class="bar-row">
+        <span class="bar-row-label">Indkomstskat</span>
+        <div class="bar-track"><div class="bar-fill" id="bar-skat" style="background:var(--red)"></div></div>
+        <span class="bar-val" id="barpct-skat"></span>
+      </div>
+      <div class="bar-row">
+        <span class="bar-row-label">AM-bidrag</span>
+        <div class="bar-track"><div class="bar-fill" id="bar-am" style="background:var(--blue)"></div></div>
+        <span class="bar-val" id="barpct-am"></span>
+      </div>
+    </div>
+  </div>
 
-      if (efter_am > personfradrag) {
-        fradrag = personfradrag;
-        skattepligtig = efter_am - fradrag;
-        skat = skattepligtig * kommuneskat;
-        udbetalt = efter_am - skat;
-      } else {
-        udbetalt = efter_am;
-      }
+  <!-- ── Sammenlign resultat ── -->
+  <div class="compare-section" id="compare-result" style="display:none">
+    <div class="compare-grid">
+      <div class="compare-col" id="cmp-col-a"></div>
+      <div class="compare-col" id="cmp-col-b"></div>
+    </div>
+  </div>
 
-      document.getElementById('r-brutto').textContent = fmt(bruttoløn);
-      document.getElementById('r-am').textContent = '-' + fmt(am_bidrag);
-      document.getElementById('r-efter-am').textContent = fmt(efter_am);
-      document.getElementById('r-udbetalt').textContent = fmt(udbetalt);
+</div>
 
-      const fradragRows = document.getElementById('fradrag-rows');
-      if (fradrag > 0) {
-        document.getElementById('r-fradrag').textContent = '-' + fmt(fradrag);
-        document.getElementById('r-skattepligtig').textContent = fmt(skattepligtig);
-        document.getElementById('r-skat-label').textContent = `Indkomstskat (${kommuneskatPct}%)`;
-        document.getElementById('r-efter-skat-label').textContent = `Efter skat (${kommuneskatPct}%)`;
-        document.getElementById('r-skat').textContent = '-' + fmt(skat);
-        const efterSkat = skattepligtig - skat;
-        document.getElementById('r-efter-skat').textContent = fmt(efterSkat);
-        document.getElementById('r-efter-skat-fradrag').textContent = fmt(efterSkat + fradrag);
-        fradragRows.style.display = 'block';
-      } else {
-        fradragRows.style.display = 'none';
-      }
+<script>
+  let aktivTab = 'bruttolon';
 
-      document.getElementById('result').classList.add('visible');
-    }
+  // ── Load from URL params on init ──
+  window.addEventListener('load', () => {
+    const p = new URLSearchParams(location.search);
+    if (p.get('tab')) skiftTab(p.get('tab'));
+    if (p.get('brutto')) document.getElementById('bruttoløn').value = p.get('brutto');
+    if (p.get('tl')) document.getElementById('timelon').value = p.get('tl');
+    if (p.get('t')) document.getElementById('timer').value = p.get('t');
+    if (p.get('pf')) document.getElementById('personfradrag').value = p.get('pf');
+    if (p.get('ks')) document.getElementById('kommuneskat').value = p.get('ks');
+    if (p.get('fp') === '1') document.getElementById('feriepenge-check').checked = true;
+    if (p.get('ca')) document.getElementById('cmp-a').value = p.get('ca');
+    if (p.get('cb')) document.getElementById('cmp-b').value = p.get('cb');
+    opdaterBrutto();
+    // Auto-beregn hvis parametre er til stede
+    if (p.get('brutto') || p.get('tl') || p.get('ca')) beregn();
 
-    document.addEventListener('keydown', e => {
-      if (e.key === 'Enter') beregn();
+    // Gem/indlæs fra localStorage
+    indlaesGemte();
+  });
+
+  function indlaesGemte() {
+    const gemt = localStorage.getItem('skatSettings');
+    if (!gemt) return;
+    const s = JSON.parse(gemt);
+    // Kun overstyr hvis ingen URL params
+    const p = new URLSearchParams(location.search);
+    if (!p.get('pf') && s.pf) document.getElementById('personfradrag').value = s.pf;
+    if (!p.get('ks') && s.ks) document.getElementById('kommuneskat').value = s.ks;
+  }
+
+  function gemIndstillinger() {
+    localStorage.setItem('skatSettings', JSON.stringify({
+      pf: document.getElementById('personfradrag').value,
+      ks: document.getElementById('kommuneskat').value,
+    }));
+  }
+
+  function skiftTab(tab) {
+    aktivTab = tab;
+    ['bruttolon','timelon','baglaens','sammenlign'].forEach(t => {
+      document.getElementById('panel-' + t).style.display = t === tab ? 'block' : 'none';
     });
-  </script>
+    document.querySelectorAll('.tab').forEach((el, i) => {
+      const tabs = ['bruttolon','timelon','baglaens','sammenlign'];
+      el.classList.toggle('active', tabs[i] === tab);
+    });
+    document.getElementById('feriepenge-row').style.display =
+      (tab === 'baglaens' || tab === 'sammenlign') ? 'none' : 'block';
+    document.getElementById('result').classList.remove('visible');
+    document.getElementById('chart-section').classList.remove('visible');
+    document.getElementById('baglaens-result').classList.remove('visible');
+    document.getElementById('compare-result').style.display = 'none';
+  }
+
+  function opdaterBrutto() {
+    const tl = parseFloat(document.getElementById('timelon').value);
+    const t  = parseFloat(document.getElementById('timer').value);
+    const tillaeg = parseFloat(document.getElementById('tillaeg').value) || 0;
+    const hint = document.getElementById('brutto-hint');
+    if (!isNaN(tl) && !isNaN(t) && tl > 0 && t > 0) {
+      const brutto = tl * t + tillaeg;
+      document.getElementById('brutto-hint-val').textContent = fmt(brutto);
+      hint.style.display = 'block';
+    } else {
+      hint.style.display = 'none';
+    }
+  }
+
+  function fmt(n) {
+    return n.toLocaleString('da-DK', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' kr';
+  }
+  function fmtPct(n) {
+    return n.toLocaleString('da-DK', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + '%';
+  }
+
+  function beregnSkat(bruttoløn, personfradrag, kommuneskat) {
+    const feriepenge = document.getElementById('feriepenge-check').checked ? bruttoløn * 0.125 : 0;
+    const brutto = bruttoløn + feriepenge;
+    const am = brutto * 0.08;
+    const efterAM = brutto - am;
+    let udbetalt, fradrag = 0, skattepligtig = 0, skat = 0;
+    if (efterAM > personfradrag) {
+      fradrag = personfradrag;
+      skattepligtig = efterAM - fradrag;
+      skat = skattepligtig * kommuneskat;
+      udbetalt = efterAM - skat;
+    } else {
+      udbetalt = efterAM;
+    }
+    return { brutto, feriepenge, am, efterAM, fradrag, skattepligtig, skat, udbetalt };
+  }
+
+  function beregn() {
+    const personfradrag  = parseFloat(document.getElementById('personfradrag').value) || 5500;
+    const kommuneskatPct = parseFloat(document.getElementById('kommuneskat').value) || 36;
+    const kommuneskat    = kommuneskatPct / 100;
+
+    gemIndstillinger();
+
+    // ── Baglæns ──
+    if (aktivTab === 'baglaens') {
+      const onsket = parseFloat(document.getElementById('udbetalt-onsket').value);
+      const blTimer = parseFloat(document.getElementById('baglaens-timer').value);
+      if (isNaN(onsket) || onsket <= 0) return;
+
+      // Løs baglæns: udbetalt = brutto*(1-0.08) - (brutto*(1-0.08) - pf)*ks
+      // = brutto*0.92 - brutto*0.92*ks + pf*ks
+      // => brutto = (udbetalt - pf*ks) / (0.92 - 0.92*ks)  [hvis efterAM > pf]
+      let brutto;
+      const denom = 0.92 * (1 - kommuneskat);
+      brutto = (onsket - personfradrag * kommuneskat) / denom;
+      // Tjek om faktisk over fradrag
+      if (brutto * 0.92 <= personfradrag) {
+        brutto = onsket / 0.92;
+      }
+
+      const am   = brutto * 0.08;
+      const skat = brutto - am - onsket;
+
+      document.getElementById('bl-brutto').textContent  = fmt(brutto);
+      document.getElementById('bl-am').textContent      = fmt(am);
+      document.getElementById('bl-skat').textContent    = fmt(Math.max(skat, 0));
+
+      const blTRow = document.getElementById('bl-timelon-row');
+      if (!isNaN(blTimer) && blTimer > 0) {
+        document.getElementById('bl-timelon').textContent = fmt(brutto / blTimer) + '/t';
+        blTRow.style.display = 'flex';
+      } else {
+        blTRow.style.display = 'none';
+      }
+
+      document.getElementById('baglaens-result').classList.add('visible');
+      return;
+    }
+
+    // ── Sammenlign ──
+    if (aktivTab === 'sammenlign') {
+      const a = parseFloat(document.getElementById('cmp-a').value);
+      const b = parseFloat(document.getElementById('cmp-b').value);
+      if (isNaN(a) || isNaN(b) || a <= 0 || b <= 0) return;
+
+      const ra = beregnSkat(a, personfradrag, kommuneskat);
+      const rb = beregnSkat(b, personfradrag, kommuneskat);
+
+      function byggCol(r, label) {
+        return `
+          <div class="compare-col-header">${label}</div>
+          <div class="compare-row"><span class="cl">Bruttoløn</span><span class="cv">${fmt(r.brutto)}</span></div>
+          <div class="compare-row"><span class="cl">AM-bidrag</span><span class="cv neg">-${fmt(r.am)}</span></div>
+          <div class="compare-row"><span class="cl">Skat</span><span class="cv neg">-${fmt(r.skat)}</span></div>
+          <div class="compare-row"><span class="cl">Udbetalt</span><span class="cv pos">${fmt(r.udbetalt)}</span></div>
+          <div class="compare-row"><span class="cl">Effektiv skat</span><span class="cv">${fmtPct((1 - r.udbetalt / r.brutto) * 100)}</span></div>
+          <div class="compare-row"><span class="cl">Årligt</span><span class="cv">${fmt(r.udbetalt * 12)}</span></div>
+        `;
+      }
+
+      document.getElementById('cmp-col-a').innerHTML = byggCol(ra, 'Løn A');
+      document.getElementById('cmp-col-b').innerHTML = byggCol(rb, 'Løn B');
+      document.getElementById('compare-result').style.display = 'block';
+      return;
+    }
+
+    // ── Bruttoløn / Timeløn ──
+    let bruttoBase;
+    if (aktivTab === 'timelon') {
+      const tl     = parseFloat(document.getElementById('timelon').value);
+      const t      = parseFloat(document.getElementById('timer').value);
+      const tillaeg = parseFloat(document.getElementById('tillaeg').value) || 0;
+      if (isNaN(tl) || isNaN(t) || tl <= 0 || t <= 0) return;
+      bruttoBase = tl * t + tillaeg;
+      document.getElementById('r-timelon-row').style.display = 'flex';
+      document.getElementById('r-timelon-label').textContent = `${tl.toLocaleString('da-DK')} kr/t · ${t.toLocaleString('da-DK')} t${tillaeg > 0 ? ' + tillæg' : ''}`;
+      document.getElementById('r-timelon-val').textContent = fmt(bruttoBase);
+    } else {
+      bruttoBase = parseFloat(document.getElementById('bruttoløn').value);
+      if (isNaN(bruttoBase) || bruttoBase <= 0) return;
+      document.getElementById('r-timelon-row').style.display = 'none';
+    }
+
+    const r = beregnSkat(bruttoBase, personfradrag, kommuneskat);
+
+    // Feriepenge række
+    if (r.feriepenge > 0) {
+      document.getElementById('r-feriepenge-row').style.display = 'flex';
+      document.getElementById('r-feriepenge-val').textContent = '+' + fmt(r.feriepenge);
+    } else {
+      document.getElementById('r-feriepenge-row').style.display = 'none';
+    }
+
+    document.getElementById('r-brutto').textContent    = fmt(r.brutto);
+    document.getElementById('r-am').textContent        = '-' + fmt(r.am);
+    document.getElementById('r-efter-am').textContent  = fmt(r.efterAM);
+    document.getElementById('r-udbetalt').textContent  = fmt(r.udbetalt);
+
+    const effektivPct = (1 - r.udbetalt / r.brutto) * 100;
+    document.getElementById('r-effektiv').textContent  = fmtPct(effektivPct);
+    document.getElementById('r-aarlig').textContent    = fmt(r.udbetalt * 12);
+
+    const fradragRows = document.getElementById('fradrag-rows');
+    if (r.fradrag > 0) {
+      document.getElementById('r-fradrag').textContent          = '-' + fmt(r.fradrag);
+      document.getElementById('r-skattepligtig').textContent    = fmt(r.skattepligtig);
+      document.getElementById('r-skat-label').textContent       = `Indkomstskat (${kommuneskatPct}%)`;
+      document.getElementById('r-efter-skat-label').textContent = `Efter skat (${kommuneskatPct}%)`;
+      document.getElementById('r-skat').textContent             = '-' + fmt(r.skat);
+      const efterSkat = r.skattepligtig - r.skat;
+      document.getElementById('r-efter-skat').textContent       = fmt(efterSkat);
+      document.getElementById('r-efter-skat-fradrag').textContent = fmt(efterSkat + r.fradrag);
+      fradragRows.style.display = 'block';
+    } else {
+      fradragRows.style.display = 'none';
+    }
+
+    document.getElementById('result').classList.add('visible');
+
+    // ── Søjlediagram ──
+    const pctUdbetalt = (r.udbetalt / r.brutto) * 100;
+    const pctSkat     = (r.skat     / r.brutto) * 100;
+    const pctAM       = (r.am       / r.brutto) * 100;
+    document.getElementById('bar-udbetalt').style.width = pctUdbetalt + '%';
+    document.getElementById('bar-skat').style.width     = pctSkat + '%';
+    document.getElementById('bar-am').style.width       = pctAM + '%';
+    document.getElementById('barpct-udbetalt').textContent = fmtPct(pctUdbetalt);
+    document.getElementById('barpct-skat').textContent     = fmtPct(pctSkat);
+    document.getElementById('barpct-am').textContent       = fmtPct(pctAM);
+    document.getElementById('chart-section').classList.add('visible');
+  }
+
+  function delLink(btn) {
+    const p = new URLSearchParams();
+    p.set('tab', aktivTab);
+    p.set('pf', document.getElementById('personfradrag').value);
+    p.set('ks', document.getElementById('kommuneskat').value);
+    if (document.getElementById('feriepenge-check').checked) p.set('fp', '1');
+    if (aktivTab === 'bruttolon') p.set('brutto', document.getElementById('bruttoløn').value);
+    if (aktivTab === 'timelon') {
+      p.set('tl', document.getElementById('timelon').value);
+      p.set('t',  document.getElementById('timer').value);
+    }
+    if (aktivTab === 'sammenlign') {
+      p.set('ca', document.getElementById('cmp-a').value);
+      p.set('cb', document.getElementById('cmp-b').value);
+    }
+    const url = location.origin + location.pathname + '?' + p.toString();
+    navigator.clipboard.writeText(url).then(() => {
+      btn.textContent = '✓ Kopieret';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = '⬡ Del link'; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+
+  function nulstil() {
+    ['bruttoløn','timelon','timer','tillaeg','udbetalt-onsket','baglaens-timer','cmp-a','cmp-b']
+      .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+    document.getElementById('feriepenge-check').checked = false;
+    document.getElementById('result').classList.remove('visible');
+    document.getElementById('chart-section').classList.remove('visible');
+    document.getElementById('baglaens-result').classList.remove('visible');
+    document.getElementById('compare-result').style.display = 'none';
+    document.getElementById('brutto-hint').style.display = 'none';
+    history.replaceState(null, '', location.pathname);
+  }
+
+  document.addEventListener('keydown', e => { if (e.key === 'Enter') beregn(); });
+</script>
 </body>
 </html>
