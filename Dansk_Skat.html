@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Skatteberegner</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0e0e0f;
+      --surface: #161618;
+      --border: #2a2a2e;
+      --accent: #c8f135;
+      --text: #e8e8e8;
+      --muted: #666;
+      --red: #ff5c5c;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'IBM Plex Sans', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 480px;
+    }
+
+    header {
+      margin-bottom: 2.5rem;
+    }
+
+    header h1 {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--accent);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 0.3rem;
+    }
+
+    header p {
+      font-size: 0.8rem;
+      color: var(--muted);
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    .input-group {
+      margin-bottom: 1.5rem;
+    }
+
+    label {
+      display: block;
+      font-size: 0.72rem;
+      font-family: 'IBM Plex Mono', monospace;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.5rem;
+    }
+
+    .input-wrap {
+      display: flex;
+      align-items: center;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      transition: border-color 0.2s;
+    }
+
+    .input-wrap:focus-within {
+      border-color: var(--accent);
+    }
+
+    input[type="number"] {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 1.4rem;
+      padding: 0.8rem 1rem;
+      width: 100%;
+      -moz-appearance: textfield;
+    }
+
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+    .currency-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--muted);
+      padding-right: 1rem;
+    }
+
+    button {
+      width: 100%;
+      background: var(--accent);
+      color: #0e0e0f;
+      border: none;
+      padding: 0.85rem;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+
+    button:hover { opacity: 0.88; }
+    button:active { opacity: 0.75; }
+
+    .result {
+      margin-top: 2rem;
+      border: 1px solid var(--border);
+      display: none;
+    }
+
+    .result.visible { display: block; }
+
+    .result-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 1.1rem;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.82rem;
+    }
+
+    .result-row:last-child { border-bottom: none; }
+
+    .result-row .label {
+      color: var(--muted);
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    .result-row .value {
+      font-family: 'IBM Plex Mono', monospace;
+      font-weight: 600;
+    }
+
+    .result-row .value.negative { color: var(--red); }
+    .result-row .value.positive { color: var(--accent); }
+
+    .result-total {
+      background: var(--surface);
+      padding: 1rem 1.1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid var(--accent);
+    }
+
+    .result-total .label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+    }
+
+    .result-total .value {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--accent);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Skatteberegner</h1>
+      <p>AM-bidrag 8% · Personfradrag og kommuneskat kan justeres</p>
+    </header>
+
+    <div class="input-group">
+      <label>Bruttoløn</label>
+      <div class="input-wrap">
+        <input type="number" id="bruttoløn" placeholder="0" min="0" step="1">
+        <span class="currency-label">KR</span>
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1.5rem;">
+      <div class="input-group" style="margin-bottom:0">
+        <label>Personfradrag</label>
+        <div class="input-wrap">
+          <input type="number" id="personfradrag" value="5500" min="0" step="100">
+          <span class="currency-label">KR</span>
+        </div>
+      </div>
+      <div class="input-group" style="margin-bottom:0">
+        <label>Kommuneskat</label>
+        <div class="input-wrap">
+          <input type="number" id="kommuneskat" value="36" min="0" max="100" step="0.1">
+          <span class="currency-label">%</span>
+        </div>
+      </div>
+    </div>
+
+    <button onclick="beregn()">Beregn skat</button>
+
+    <div class="result" id="result">
+      <div class="result-row">
+        <span class="label">Bruttoløn</span>
+        <span class="value" id="r-brutto"></span>
+      </div>
+      <div class="result-row">
+        <span class="label">AM-bidrag (8%)</span>
+        <span class="value negative" id="r-am"></span>
+      </div>
+      <div class="result-row">
+        <span class="label">Efter AM-bidrag</span>
+        <span class="value" id="r-efter-am"></span>
+      </div>
+      <div id="fradrag-rows" style="display:none">
+        <div class="result-row">
+          <span class="label">Personfradrag</span>
+          <span class="value negative" id="r-fradrag"></span>
+        </div>
+        <div class="result-row">
+          <span class="label">Skattepligtig indkomst</span>
+          <span class="value" id="r-skattepligtig"></span>
+        </div>
+        <div class="result-row">
+          <span class="label" id="r-skat-label">Indkomstskat (36%)</span>
+          <span class="value negative" id="r-skat"></span>
+        </div>
+        <div class="result-row">
+          <span class="label" id="r-efter-skat-label">Efter skat (36%)</span>
+          <span class="value" id="r-efter-skat"></span>
+        </div>
+        <div class="result-row">
+          <span class="label">Efter skat + fradrag</span>
+          <span class="value positive" id="r-efter-skat-fradrag"></span>
+        </div>
+      </div>
+      <div class="result-total">
+        <span class="label">Udbetalt</span>
+        <span class="value" id="r-udbetalt"></span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function fmt(n) {
+      return n.toLocaleString('da-DK', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' kr';
+    }
+
+    function beregn() {
+      const bruttoløn = parseFloat(document.getElementById('bruttoløn').value);
+      const personfradrag = parseFloat(document.getElementById('personfradrag').value) || 5500;
+      const kommuneskatPct = parseFloat(document.getElementById('kommuneskat').value) || 36;
+      const kommuneskat = kommuneskatPct / 100;
+
+      if (isNaN(bruttoløn) || bruttoløn <= 0) return;
+
+      const am_bidrag = bruttoløn * 0.08;
+      const efter_am = bruttoløn - am_bidrag;
+
+      let udbetalt, fradrag = 0, skattepligtig = 0, skat = 0;
+
+      if (efter_am > personfradrag) {
+        fradrag = personfradrag;
+        skattepligtig = efter_am - fradrag;
+        skat = skattepligtig * kommuneskat;
+        udbetalt = efter_am - skat;
+      } else {
+        udbetalt = efter_am;
+      }
+
+      document.getElementById('r-brutto').textContent = fmt(bruttoløn);
+      document.getElementById('r-am').textContent = '-' + fmt(am_bidrag);
+      document.getElementById('r-efter-am').textContent = fmt(efter_am);
+      document.getElementById('r-udbetalt').textContent = fmt(udbetalt);
+
+      const fradragRows = document.getElementById('fradrag-rows');
+      if (fradrag > 0) {
+        document.getElementById('r-fradrag').textContent = '-' + fmt(fradrag);
+        document.getElementById('r-skattepligtig').textContent = fmt(skattepligtig);
+        document.getElementById('r-skat-label').textContent = `Indkomstskat (${kommuneskatPct}%)`;
+        document.getElementById('r-efter-skat-label').textContent = `Efter skat (${kommuneskatPct}%)`;
+        document.getElementById('r-skat').textContent = '-' + fmt(skat);
+        const efterSkat = skattepligtig - skat;
+        document.getElementById('r-efter-skat').textContent = fmt(efterSkat);
+        document.getElementById('r-efter-skat-fradrag').textContent = fmt(efterSkat + fradrag);
+        fradragRows.style.display = 'block';
+      } else {
+        fradragRows.style.display = 'none';
+      }
+
+      document.getElementById('result').classList.add('visible');
+    }
+
+    document.getElementById('bruttoløn').addEventListener('keydown', e => {
+      if (e.key === 'Enter') beregn();
+    });
+  </script>
+</body>
+</html>
