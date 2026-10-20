@@ -1,750 +1,599 @@
 <!DOCTYPE html>
 <html lang="da">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Skatteberegner</title>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600&display=swap" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --bg: #0e0e0f; --surface: #161618; --surface2: #1e1e21;
-      --border: #2a2a2e; --accent: #c8f135; --text: #e8e8e8;
-      --muted: #555; --red: #ff5c5c; --blue: #5cb8ff; --orange: #ffaa5c;
-    }
-    body { background:var(--bg); color:var(--text); font-family:'IBM Plex Sans',sans-serif; min-height:100vh; display:flex; justify-content:center; padding:2rem 1rem 5rem; }
-    .container { width:100%; max-width:540px; }
-
-    header { margin-bottom:2rem; }
-    header h1 { font-family:'IBM Plex Mono',monospace; font-size:1.1rem; font-weight:600; color:var(--accent); letter-spacing:.08em; text-transform:uppercase; margin-bottom:.25rem; }
-    header p { font-size:.78rem; color:var(--muted); font-family:'IBM Plex Mono',monospace; }
-
-    .tabs { display:flex; border:1px solid var(--border); margin-bottom:1.5rem; }
-    .tab { flex:1; padding:.6rem .3rem; background:transparent; border:none; border-right:1px solid var(--border); color:var(--muted); font-family:'IBM Plex Mono',monospace; font-size:.63rem; letter-spacing:.06em; text-transform:uppercase; cursor:pointer; transition:all .15s; }
-    .tab:last-child { border-right:none; }
-    .tab.active { background:var(--surface); color:var(--accent); }
-    .tab:hover:not(.active) { color:var(--text); }
-
-    .input-group { margin-bottom:1.2rem; }
-    label { display:block; font-size:.68rem; font-family:'IBM Plex Mono',monospace; color:var(--muted); text-transform:uppercase; letter-spacing:.1em; margin-bottom:.4rem; }
-    .input-wrap { display:flex; align-items:center; background:var(--surface); border:1px solid var(--border); transition:border-color .2s; }
-    .input-wrap:focus-within { border-color:var(--accent); }
-    input[type="number"], input[type="text"] { flex:1; background:transparent; border:none; outline:none; color:var(--text); font-family:'IBM Plex Mono',monospace; font-size:1.3rem; padding:.7rem .9rem; width:100%; -moz-appearance:textfield; }
-    input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance:none; }
-    .unit-label { font-family:'IBM Plex Mono',monospace; font-size:.75rem; color:var(--muted); padding-right:.9rem; white-space:nowrap; }
-
-    .hint { font-family:'IBM Plex Mono',monospace; font-size:.72rem; color:var(--muted); margin-top:-.5rem; margin-bottom:1.2rem; padding:.5rem .7rem; border-left:2px solid var(--border); }
-    .hint .val { color:var(--accent); }
-    .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1.2rem; }
-    .section-label { font-family:'IBM Plex Mono',monospace; font-size:.65rem; color:var(--muted); text-transform:uppercase; letter-spacing:.12em; margin-bottom:.6rem; padding-bottom:.4rem; border-bottom:1px solid var(--border); }
-
-    .btn-primary { width:100%; background:var(--accent); color:#0e0e0f; border:none; padding:.85rem; font-family:'IBM Plex Mono',monospace; font-size:.82rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; cursor:pointer; transition:opacity .15s; margin-bottom:.6rem; }
-    .btn-primary:hover { opacity:.88; }
-    .btn-row { display:flex; gap:.6rem; margin-bottom:1.5rem; flex-wrap:wrap; }
-    .btn-secondary { flex:1; min-width:70px; background:transparent; color:var(--muted); border:1px solid var(--border); padding:.55rem .4rem; font-family:'IBM Plex Mono',monospace; font-size:.62rem; letter-spacing:.06em; text-transform:uppercase; cursor:pointer; transition:all .15s; white-space:nowrap; }
-    .btn-secondary:hover { color:var(--text); border-color:var(--text); }
-    .btn-secondary.copied, .btn-secondary.ok { color:var(--accent); border-color:var(--accent); }
-
-    .result { margin-top:1.5rem; border:1px solid var(--border); display:none; }
-    .result.visible { display:block; }
-    .result-row { display:flex; justify-content:space-between; align-items:center; padding:.65rem 1rem; border-bottom:1px solid var(--border); font-size:.8rem; }
-    .result-row .label { color:var(--muted); font-family:'IBM Plex Mono',monospace; }
-    .result-row .value { font-family:'IBM Plex Mono',monospace; font-weight:600; }
-    .result-row .value.negative { color:var(--red); }
-    .result-row .value.positive { color:var(--accent); }
-    .result-total { background:var(--surface); padding:.9rem 1rem; display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--accent); }
-    .result-total .label { font-family:'IBM Plex Mono',monospace; font-size:.68rem; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); }
-    .result-total .value { font-family:'IBM Plex Mono',monospace; font-size:1.4rem; font-weight:600; color:var(--accent); }
-
-    .chart-section { margin-top:1.2rem; border:1px solid var(--border); padding:1rem; display:none; }
-    .chart-section.visible { display:block; }
-    .chart-title { font-family:'IBM Plex Mono',monospace; font-size:.65rem; color:var(--muted); text-transform:uppercase; letter-spacing:.1em; margin-bottom:.8rem; }
-    .bar-chart { display:flex; flex-direction:column; gap:.5rem; }
-    .bar-row { display:flex; align-items:center; gap:.7rem; }
-    .bar-row-label { font-family:'IBM Plex Mono',monospace; font-size:.68rem; color:var(--muted); width:110px; flex-shrink:0; }
-    .bar-track { flex:1; background:var(--border); height:10px; }
-    .bar-fill { height:100%; transition:width .4s ease; }
-    .bar-val { font-family:'IBM Plex Mono',monospace; font-size:.65rem; color:var(--muted); width:42px; text-align:right; flex-shrink:0; }
-
-    /* Budget */
-    .budget-section { margin-top:2rem; display:none; }
-    .budget-section.visible { display:block; }
-    .budget-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; }
-    .budget-header .section-label { margin-bottom:0; border-bottom:none; padding-bottom:0; }
-    .budget-add-btn { background:none; border:1px solid var(--border); color:var(--muted); font-family:'IBM Plex Mono',monospace; font-size:.62rem; padding:.25rem .6rem; cursor:pointer; text-transform:uppercase; letter-spacing:.06em; transition:all .15s; }
-    .budget-add-btn:hover { color:var(--accent); border-color:var(--accent); }
-
-    .budget-item { display:grid; grid-template-columns:1fr 120px 24px; gap:.5rem; align-items:center; margin-bottom:.4rem; background:var(--surface); border:1px solid var(--border); padding:.45rem .7rem; }
-    .budget-item input[type="text"] { font-size:.85rem; padding:.15rem 0; }
-    .budget-item input[type="number"] { font-size:.85rem; padding:.15rem .3rem; text-align:right; }
-    .budget-item .del-btn { background:none; border:none; color:var(--muted); font-size:1rem; cursor:pointer; padding:0; line-height:1; transition:color .15s; text-align:center; }
-    .budget-item .del-btn:hover { color:var(--red); }
-
-    .budget-summary { margin-top:.8rem; border:1px solid var(--border); }
-    .budget-sum-row { display:flex; justify-content:space-between; padding:.6rem 1rem; border-bottom:1px solid var(--border); font-family:'IBM Plex Mono',monospace; font-size:.8rem; }
-    .budget-sum-row:last-child { border-bottom:none; }
-    .budget-sum-row .bl { color:var(--muted); }
-    .budget-sum-row .bv { font-weight:600; }
-
-    .budget-bar-wrap { padding:1rem; background:var(--surface); border-top:1px solid var(--border); }
-    .budget-legend { display:flex; flex-wrap:wrap; gap:.5rem .9rem; margin-top:.7rem; }
-    .leg-item { display:flex; align-items:center; gap:.35rem; font-family:'IBM Plex Mono',monospace; font-size:.65rem; color:var(--muted); }
-    .leg-dot { width:8px; height:8px; flex-shrink:0; }
-
-    .savings-box { display:flex; justify-content:space-between; align-items:center; padding:.9rem 1rem; border:1px solid var(--accent); background:var(--surface2); margin-top:.5rem; }
-    .savings-box .sl { font-family:'IBM Plex Mono',monospace; font-size:.68rem; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); }
-    .savings-box .sv { font-family:'IBM Plex Mono',monospace; font-size:1.4rem; font-weight:600; }
-
-    /* Compare */
-    .compare-grid { display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--border); border:1px solid var(--border); margin-top:.8rem; }
-    .compare-col { background:var(--bg); padding:.7rem .8rem; }
-    .compare-col-header { font-family:'IBM Plex Mono',monospace; font-size:.62rem; color:var(--accent); text-transform:uppercase; letter-spacing:.08em; margin-bottom:.6rem; }
-    .compare-row { display:flex; justify-content:space-between; font-family:'IBM Plex Mono',monospace; font-size:.68rem; padding:.25rem 0; border-bottom:1px solid var(--border); }
-    .compare-row:last-child { border-bottom:none; }
-    .compare-row .cl { color:var(--muted); } .compare-row .cv { font-weight:600; }
-    .compare-row .cv.neg { color:var(--red); } .compare-row .cv.pos { color:var(--accent); }
-
-    .baglaens-result { margin-top:.8rem; padding:.7rem .9rem; border:1px solid var(--border); background:var(--surface); font-family:'IBM Plex Mono',monospace; font-size:.8rem; display:none; }
-    .baglaens-result.visible { display:block; }
-    .bl-row { display:flex; justify-content:space-between; padding:.2rem 0; }
-    .bl-row .bll { color:var(--muted); font-size:.7rem; } .bl-row .blv { font-weight:600; color:var(--accent); }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Skatteberegner 2026 — WX7 Lab</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0e0e0f;--surface:#161618;--surface2:#1e1e21;--border:#2a2a2e;--accent:#c8f135;--text:#e8e8e8;--muted:#777;--red:#ff5c5c;--blue:#5cb8ff;--orange:#ffaa5c;--green2:#34d399}
+body{background:var(--bg);color:var(--text);font-family:Arial,sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:0 1rem 6rem}
+.topbar{width:100%;max-width:760px;padding:1rem 0;margin-bottom:1rem}
+.back-link{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-decoration:none}
+.back-link:hover{color:var(--accent)}
+.container{width:100%;max-width:760px}
+header{margin-bottom:1.4rem}
+header h1{font-family:monospace;font-size:1.15rem;color:var(--accent);letter-spacing:.08em;text-transform:uppercase;margin-bottom:.25rem}
+header p{font-size:.78rem;color:var(--muted);font-family:monospace;line-height:1.5}
+.notice{border:1px solid var(--border);background:var(--surface);padding:.8rem .9rem;margin-bottom:1rem;font-size:.76rem;line-height:1.5;color:#bbb}
+.notice strong{color:var(--accent)}
+.tabs{display:grid;grid-template-columns:repeat(5,1fr);border:1px solid var(--border);margin-bottom:1.25rem}
+.tab{padding:.65rem .25rem;background:transparent;border:0;border-right:1px solid var(--border);color:var(--muted);font:600 .62rem monospace;text-transform:uppercase;letter-spacing:.05em;cursor:pointer}
+.tab:last-child{border-right:0}.tab.active{background:var(--surface);color:var(--accent)}.tab:hover:not(.active){color:var(--text)}
+.section{margin-bottom:1rem}
+.section-label{font:600 .65rem monospace;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;margin-bottom:.6rem;padding-bottom:.4rem;border-bottom:1px solid var(--border)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem}
+.input-group{margin-bottom:1rem}
+label{display:block;font:600 .66rem monospace;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.38rem}
+.input-wrap{display:flex;align-items:center;background:var(--surface);border:1px solid var(--border);transition:border-color .2s}
+.input-wrap:focus-within{border-color:var(--accent)}
+input[type=number],input[type=text],select{width:100%;background:transparent;border:0;outline:0;color:var(--text);font:1rem monospace;padding:.72rem .8rem}
+select{appearance:auto}
+input[type=number]{-moz-appearance:textfield}
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none}
+.unit{font:600 .7rem monospace;color:var(--muted);padding-right:.8rem}
+.small{font:normal .68rem monospace;color:var(--muted);line-height:1.45;margin-top:.35rem}
+.radio-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem}
+.radio-grid.two{grid-template-columns:repeat(2,1fr)}
+.radio{position:relative}
+.radio input{position:absolute;opacity:0;pointer-events:none}
+.radio label{display:block;margin:0;padding:.7rem .65rem;border:1px solid var(--border);background:var(--surface);color:var(--muted);cursor:pointer;text-align:center;font:600 .68rem monospace;letter-spacing:.03em;text-transform:uppercase}
+.radio input:checked+label{border-color:var(--accent);color:var(--accent);background:var(--surface2)}
+.toggle-row{display:flex;align-items:center;gap:.65rem;padding:.65rem .8rem;border:1px solid var(--border);background:var(--surface);margin-bottom:1rem;cursor:pointer}
+.toggle-switch{width:32px;height:18px;background:var(--border);border-radius:9px;position:relative;flex:0 0 auto}
+.toggle-switch::after{content:"";position:absolute;width:12px;height:12px;left:3px;top:3px;border-radius:50%;background:var(--muted);transition:.18s}
+.toggle-row.active{border-color:var(--accent)}.toggle-row.active .toggle-switch{background:var(--accent)}.toggle-row.active .toggle-switch::after{left:17px;background:#111}
+.toggle-label{flex:1;font:600 .7rem monospace;color:var(--muted);text-transform:uppercase}.toggle-row.active .toggle-label{color:var(--text)}
+.btn-primary{width:100%;border:0;background:var(--accent);color:#111;padding:.85rem;font:700 .78rem monospace;text-transform:uppercase;letter-spacing:.1em;cursor:pointer;margin:.2rem 0 .6rem}
+.btn-primary:hover{opacity:.9}
+.btn-row{display:flex;gap:.55rem;flex-wrap:wrap;margin-bottom:1.4rem}
+.btn-secondary{flex:1;min-width:110px;background:transparent;border:1px solid var(--border);color:var(--muted);padding:.55rem;font:600 .62rem monospace;text-transform:uppercase;letter-spacing:.06em;cursor:pointer}
+.btn-secondary:hover{border-color:var(--text);color:var(--text)}
+.result,.chart-section,.budget-section,.baglaens-result,.compare-result,.student-result{display:none}
+.visible{display:block}
+.result{border:1px solid var(--border);margin-top:1rem}
+.result-row{display:flex;justify-content:space-between;gap:1rem;align-items:center;padding:.65rem .9rem;border-bottom:1px solid var(--border);font-size:.8rem}
+.result-row .label{color:var(--muted);font:normal .7rem monospace;text-transform:none;letter-spacing:0;margin:0}
+.result-row .value{font:600 .8rem monospace;text-align:right}
+.negative{color:var(--red)}.positive{color:var(--accent)}.info{color:var(--blue)}.orange{color:var(--orange)}
+.result-total{display:flex;justify-content:space-between;align-items:center;padding:.9rem;background:var(--surface);border-top:1px solid var(--accent)}
+.result-total .label{font:600 .68rem monospace;color:var(--muted);text-transform:uppercase;letter-spacing:.1em}.result-total .value{font:700 1.35rem monospace;color:var(--accent)}
+.explain{padding:.75rem .9rem;border-bottom:1px solid var(--border);font:.68rem monospace;color:var(--muted);line-height:1.55}
+.kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin-top:.8rem}
+.kpi{border:1px solid var(--border);background:var(--surface);padding:.75rem}.kpi .k{font:600 .58rem monospace;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.3rem}.kpi .v{font:700 .95rem monospace}
+.card{border:1px solid var(--border);background:var(--surface);padding:.8rem;margin-bottom:.7rem}
+.card h3{font:700 .7rem monospace;color:var(--accent);text-transform:uppercase;margin-bottom:.6rem}
+.card .mini-row{display:flex;justify-content:space-between;padding:.28rem 0;border-bottom:1px solid var(--border);font:.68rem monospace}.card .mini-row:last-child{border-bottom:0}.card .mini-row span:first-child{color:var(--muted)}
+.bar-chart{border:1px solid var(--border);padding:.85rem;margin-top:.8rem}
+.bar-row{display:flex;align-items:center;gap:.6rem;margin-bottom:.5rem}.bar-row:last-child{margin-bottom:0}.bar-label{width:105px;font:.65rem monospace;color:var(--muted)}.bar-track{height:10px;flex:1;background:var(--border)}.bar-fill{height:100%}.bar-val{width:52px;text-align:right;font:.62rem monospace;color:var(--muted)}
+.budget-item{display:grid;grid-template-columns:1fr 125px 26px;gap:.45rem;margin-bottom:.4rem}.budget-item input{background:var(--surface);border:1px solid var(--border)}.del-btn{background:transparent;border:1px solid var(--border);color:var(--muted);cursor:pointer}.del-btn:hover{color:var(--red);border-color:var(--red)}
+.savings-box{display:flex;justify-content:space-between;align-items:center;border:1px solid var(--accent);background:var(--surface2);padding:.9rem;margin-top:.6rem}.savings-box span:first-child{font:600 .66rem monospace;color:var(--muted);text-transform:uppercase}.savings-box span:last-child{font:700 1.2rem monospace}
+.help{font:.65rem monospace;color:var(--muted);line-height:1.5;border-left:2px solid var(--border);padding:.55rem .7rem;margin-bottom:1rem}
+.footer{margin-top:2rem;padding-top:1rem;border-top:1px solid var(--border);font:.62rem monospace;color:var(--muted);line-height:1.6}.footer a{color:var(--blue)}
+@media(max-width:640px){.tabs{grid-template-columns:repeat(2,1fr)}.tab{border-bottom:1px solid var(--border)}.grid2,.grid3,.kpi-grid{grid-template-columns:1fr}.radio-grid{grid-template-columns:1fr}.budget-item{grid-template-columns:1fr 100px 26px}.topbar{padding-top:.6rem}}
+</style>
 </head>
 <body>
+<div class="topbar"><a class="back-link" href="/">← lab.williamlarsen.dk</a></div>
 <div class="container">
-  <header>
-    <h1>Skatteberegner</h1>
-    <p>AM-bidrag 8% · personfradrag og kommuneskat kan justeres</p>
-  </header>
+<header>
+<h1>Skatteberegner · 2026</h1>
+<p>Praktisk beregning ud fra skattekortets trækprocent, månedsfradrag/frikort og indkomsttype.</p>
+</header>
 
-  <div class="tabs">
-    <button class="tab active" onclick="skiftTab('bruttolon')">Bruttoløn</button>
-    <button class="tab" onclick="skiftTab('timelon')">Timeløn</button>
-    <button class="tab" onclick="skiftTab('baglaens')">Baglæns</button>
-    <button class="tab" onclick="skiftTab('sammenlign')">Sammenlign</button>
-  </div>
+<div class="notice">
+<strong>Vigtigt:</strong> Brug helst tallene fra din forskudsopgørelse i TastSelv. Beregneren er lavet til et realistisk udbetalingsestimat — ikke som en officiel skatteopgørelse.
+</div>
 
-  <div id="panel-bruttolon">
-    <div class="input-group">
-      <label>Bruttoløn</label>
-      <div class="input-wrap">
-        <input type="number" id="bruttoløn" placeholder="0" min="0" step="1">
-        <span class="unit-label">KR</span>
-      </div>
-    </div>
-  </div>
+<div class="tabs">
+<button class="tab active" onclick="skiftTab('bruttolon')">Bruttoløn</button>
+<button class="tab" onclick="skiftTab('timelon')">Timeløn</button>
+<button class="tab" onclick="skiftTab('baglaens')">Baglæns</button>
+<button class="tab" onclick="skiftTab('sammenlign')">Sammenlign</button>
+<button class="tab" onclick="skiftTab('studerende')">Studerende</button>
+</div>
 
-  <div id="panel-timelon" style="display:none">
-    <div class="grid2">
-      <div class="input-group" style="margin-bottom:0">
-        <label>Timeløn</label>
-        <div class="input-wrap">
-          <input type="number" id="timelon" placeholder="0" min="0" step="1" oninput="opdaterBrutto()">
-          <span class="unit-label">KR/T</span>
-        </div>
-      </div>
-      <div class="input-group" style="margin-bottom:0">
-        <label>Timer / måned</label>
-        <div class="input-wrap">
-          <input type="number" id="timer" placeholder="0" min="0" step="0.5" oninput="opdaterBrutto()">
-          <span class="unit-label">T</span>
-        </div>
-      </div>
-    </div>
-    <div class="input-group" style="margin-top:1rem">
-      <label>Tillæg (valgfrit)</label>
-      <div class="input-wrap">
-        <input type="number" id="tillaeg" placeholder="0" min="0" step="1">
-        <span class="unit-label">KR</span>
-      </div>
-    </div>
-    <div class="hint" id="brutto-hint" style="display:none">Bruttoløn inkl. tillæg: <span class="val" id="brutto-hint-val"></span></div>
-  </div>
+<div class="section">
+<div class="section-label">Indkomstopsætning</div>
+<div class="grid2">
+<div class="input-group">
+<label for="indkomsttype">Indkomsttype</label>
+<select id="indkomsttype" onchange="opdaterUI()">
+<option value="lon">Løn</option>
+<option value="su">SU</option>
+<option value="dagpenge">Dagpenge</option>
+<option value="pension">Pension</option>
+<option value="bindkomst">B-indkomst / honorar</option>
+<option value="kontanthjaelp">Kontanthjælp</option>
+</select>
+<div class="small" id="income-help"></div>
+</div>
+<div class="input-group">
+<label for="alder">Alder</label>
+<div class="input-wrap"><input id="alder" type="number" min="0" max="120" value="20" oninput="opdaterUI()"><span class="unit">ÅR</span></div>
+<div class="small">Fra 2026 betales AM-bidrag fra det kalenderår, du fylder 18. Sæt alder til 18, hvis du fylder 18 i år.</div>
+</div>
+</div>
 
-  <div id="panel-baglaens" style="display:none">
-    <div class="input-group">
-      <label>Ønsket udbetalt beløb</label>
-      <div class="input-wrap">
-        <input type="number" id="udbetalt-onsket" placeholder="0" min="0" step="1">
-        <span class="unit-label">KR</span>
-      </div>
-    </div>
-    <div class="input-group">
-      <label>Timer / måned (valgfrit)</label>
-      <div class="input-wrap">
-        <input type="number" id="baglaens-timer" placeholder="0" min="0" step="0.5">
-        <span class="unit-label">T</span>
-      </div>
-    </div>
-  </div>
+<div class="section-label">Skattekort</div>
+<div class="radio-grid">
+<div class="radio"><input type="radio" name="kort" id="kort-hoved" value="hovedkort" checked onchange="opdaterUI()"><label for="kort-hoved">Hovedkort</label></div>
+<div class="radio"><input type="radio" name="kort" id="kort-bikort" value="bikort" onchange="opdaterUI()"><label for="kort-bikort">Bikort</label></div>
+<div class="radio"><input type="radio" name="kort" id="kort-frikort" value="frikort" onchange="opdaterUI()"><label for="kort-frikort">Frikort</label></div>
+</div>
+<div class="small" id="kort-help" style="margin:.55rem 0 1rem"></div>
 
-  <div id="panel-sammenlign" style="display:none">
-    <div class="grid2">
-      <div>
-        <div class="section-label">Løn A</div>
-        <div class="input-group">
-          <label>Bruttoløn</label>
-          <div class="input-wrap">
-            <input type="number" id="cmp-a" placeholder="0" min="0" step="1">
-            <span class="unit-label">KR</span>
-          </div>
-        </div>
-      </div>
-      <div>
-        <div class="section-label">Løn B</div>
-        <div class="input-group">
-          <label>Bruttoløn</label>
-          <div class="input-wrap">
-            <input type="number" id="cmp-b" placeholder="0" min="0" step="1">
-            <span class="unit-label">KR</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+<div class="grid2">
+<div class="input-group" id="trækprocent-group">
+<label for="traekprocent">Trækprocent</label>
+<div class="input-wrap"><input id="traekprocent" type="number" value="38" min="0" max="100" step=".1"><span class="unit">%</span></div>
+<div class="small">Findes øverst på dit skattekort. Månedsfradraget på skattekortet tager normalt allerede højde for personfradrag, beskæftigelsesfradrag og øvrige relevante fradrag.</div>
+</div>
+<div class="input-group" id="maanedsfradrag-group">
+<label for="maanedsfradrag">Månedsfradrag</label>
+<div class="input-wrap"><input id="maanedsfradrag" type="number" value="4508" min="0" step="1"><span class="unit">KR</span></div>
+<div class="small">Hovedkort: brug dit faktiske månedsfradrag fra TastSelv.</div>
+</div>
+</div>
 
-  <div id="feriepenge-row" class="input-group">
-    <label style="margin-bottom:.5rem">Feriepenge 12,5%</label>
-    <label style="display:flex;align-items:center;gap:.4rem;margin-bottom:0;cursor:pointer;font-size:.78rem;text-transform:none;letter-spacing:0;color:var(--text)">
-      <input type="checkbox" id="feriepenge-check" style="accent-color:var(--accent);width:14px;height:14px">
-      Inkluder feriepenge (tilføjes bruttolønnen)
-    </label>
-  </div>
+<div class="input-group" id="frikort-group" style="display:none">
+<label for="frikorttilbage">Frikort tilbage i år</label>
+<div class="input-wrap"><input id="frikorttilbage" type="number" value="54100" min="0" step="100"><span class="unit">KR</span></div>
+<div class="small">2026-standard: 54.100 kr. Feltet er "tilbage", så du kan bruge beregneren midt i året.</div>
+</div>
 
-  <div class="section-label">Skatteindstillinger</div>
-  <div class="grid2" style="margin-bottom:1.2rem">
-    <div class="input-group" style="margin-bottom:0">
-      <label>Personfradrag</label>
-      <div class="input-wrap">
-        <input type="number" id="personfradrag" value="5500" min="0" step="100">
-        <span class="unit-label">KR</span>
-      </div>
-    </div>
-    <div class="input-group" style="margin-bottom:0">
-      <label>Kommuneskat</label>
-      <div class="input-wrap">
-        <input type="number" id="kommuneskat" value="36" min="0" max="100" step="0.1">
-        <span class="unit-label">%</span>
-      </div>
-    </div>
-  </div>
+<div class="grid2" id="extra-deductions">
+<div class="input-group">
+<label for="ekstrafradrag">Ekstra fradrag pr. måned</label>
+<div class="input-wrap"><input id="ekstrafradrag" type="number" value="0" min="0" step="100"><span class="unit">KR</span></div>
+<div class="small">Fx kørselsfradrag eller andre beløb, hvis de allerede er beregnet pr. måned.</div>
+</div>
+<div class="input-group">
+<label for="pensionpct">Medarbejderpension</label>
+<div class="input-wrap"><input id="pensionpct" type="number" value="0" min="0" max="50" step=".1"><span class="unit">%</span></div>
+<div class="small">Valgfrit. Fratrækkes før AM i denne model.</div>
+</div>
+</div>
 
-  <button class="btn-primary" onclick="beregn()">Beregn skat</button>
-  <div class="btn-row">
-    <button class="btn-secondary" onclick="delLink(this)">⬡ Del link</button>
-    <button class="btn-secondary" onclick="exportPDF()">↓ PDF</button>
-    <button class="btn-secondary" onclick="exportExcel()">↓ Excel</button>
-    <button class="btn-secondary" onclick="nulstil()">↺ Nulstil</button>
-  </div>
+<div class="toggle-row" id="ferie-row" onclick="toggleFeriepenge()">
+<div class="toggle-switch"></div><span class="toggle-label">Feriepenge</span><span class="small" style="margin:0">12,5 % · separat estimat</span>
+</div>
+</div>
 
-  <!-- Skatteresultat -->
-  <div class="result" id="result">
-    <div class="result-row" id="r-timelon-row" style="display:none">
-      <span class="label" id="r-timelon-label"></span>
-      <span class="value" id="r-timelon-val"></span>
-    </div>
-    <div class="result-row" id="r-feriepenge-row" style="display:none">
-      <span class="label">Feriepenge (12,5%)</span>
-      <span class="value positive" id="r-feriepenge-val"></span>
-    </div>
-    <div class="result-row">
-      <span class="label">Bruttoløn</span>
-      <span class="value" id="r-brutto"></span>
-    </div>
-    <div class="result-row">
-      <span class="label">AM-bidrag (8%)</span>
-      <span class="value negative" id="r-am"></span>
-    </div>
-    <div class="result-row">
-      <span class="label">Efter AM-bidrag</span>
-      <span class="value" id="r-efter-am"></span>
-    </div>
-    <div id="fradrag-rows" style="display:none">
-      <div class="result-row">
-        <span class="label">Personfradrag</span>
-        <span class="value negative" id="r-fradrag"></span>
-      </div>
-      <div class="result-row">
-        <span class="label">Skattepligtig indkomst</span>
-        <span class="value" id="r-skattepligtig"></span>
-      </div>
-      <div class="result-row">
-        <span class="label" id="r-skat-label">Indkomstskat</span>
-        <span class="value negative" id="r-skat"></span>
-      </div>
-      <div class="result-row">
-        <span class="label" id="r-efter-skat-label">Efter skat</span>
-        <span class="value" id="r-efter-skat"></span>
-      </div>
-      <div class="result-row">
-        <span class="label">Efter skat + fradrag</span>
-        <span class="value positive" id="r-efter-skat-fradrag"></span>
-      </div>
-    </div>
-    <div class="result-row" style="border-bottom:none">
-      <span class="label" style="color:var(--text);font-size:.72rem">Effektiv skatteprocent</span>
-      <span class="value" id="r-effektiv" style="color:var(--blue)"></span>
-    </div>
-    <div class="result-row" style="border-bottom:none">
-      <span class="label">Årlig udbetalt (× 12)</span>
-      <span class="value" id="r-aarlig" style="color:var(--muted)"></span>
-    </div>
-    <div class="result-total">
-      <span class="label">Udbetalt / måned</span>
-      <span class="value" id="r-udbetalt"></span>
-    </div>
-  </div>
+<div id="panel-bruttolon">
+<div class="section-label">Bruttoløn</div>
+<div class="input-group"><label for="bruttoløn">Beløb pr. måned</label><div class="input-wrap"><input id="bruttoløn" type="number" placeholder="0" min="0" step="1"><span class="unit">KR</span></div></div>
+</div>
 
-  <!-- Diagram -->
-  <div class="chart-section" id="chart-section">
-    <div class="chart-title">Fordeling af bruttoløn</div>
-    <div class="bar-chart">
-      <div class="bar-row"><span class="bar-row-label">Udbetalt</span><div class="bar-track"><div class="bar-fill" id="bar-udbetalt" style="background:var(--accent)"></div></div><span class="bar-val" id="barpct-udbetalt"></span></div>
-      <div class="bar-row"><span class="bar-row-label">Indkomstskat</span><div class="bar-track"><div class="bar-fill" id="bar-skat" style="background:var(--red)"></div></div><span class="bar-val" id="barpct-skat"></span></div>
-      <div class="bar-row"><span class="bar-row-label">AM-bidrag</span><div class="bar-track"><div class="bar-fill" id="bar-am" style="background:var(--blue)"></div></div><span class="bar-val" id="barpct-am"></span></div>
-    </div>
-  </div>
+<div id="panel-timelon" style="display:none">
+<div class="section-label">Timeløn</div>
+<div class="grid2">
+<div class="input-group"><label for="timelon">Timeløn</label><div class="input-wrap"><input id="timelon" type="number" placeholder="0" min="0" step="1" oninput="opdaterBrutto()"><span class="unit">KR/T</span></div></div>
+<div class="input-group"><label for="timer">Timer pr. måned</label><div class="input-wrap"><input id="timer" type="number" placeholder="0" min="0" step=".5" oninput="opdaterBrutto()"><span class="unit">T</span></div></div>
+</div>
+<div class="input-group"><label for="tillaeg">Tillæg</label><div class="input-wrap"><input id="tillaeg" type="number" placeholder="0" min="0" step="1" oninput="opdaterBrutto()"><span class="unit">KR</span></div></div>
+<div class="help" id="brutto-hint" style="display:none">Bruttoløn inkl. tillæg: <strong id="brutto-hint-val"></strong></div>
+</div>
 
-  <!-- Sammenlign -->
-  <div id="compare-result" style="display:none">
-    <div class="compare-grid">
-      <div class="compare-col" id="cmp-col-a"></div>
-      <div class="compare-col" id="cmp-col-b"></div>
-    </div>
-  </div>
+<div id="panel-baglaens" style="display:none">
+<div class="section-label">Baglæns</div>
+<div class="input-group"><label for="udbetalt-onsket">Ønsket udbetalt pr. måned</label><div class="input-wrap"><input id="udbetalt-onsket" type="number" placeholder="0" min="0" step="1"><span class="unit">KR</span></div></div>
+<div class="input-group"><label for="baglaens-timer">Timer pr. måned · valgfrit</label><div class="input-wrap"><input id="baglaens-timer" type="number" placeholder="0" min="0" step=".5"><span class="unit">T</span></div></div>
+</div>
 
-  <!-- Baglæns -->
-  <div class="baglaens-result" id="baglaens-result">
-    <div class="bl-row"><span class="bll">Nødvendig bruttoløn</span><span class="blv" id="bl-brutto"></span></div>
-    <div class="bl-row"><span class="bll">AM-bidrag</span><span class="blv" id="bl-am" style="color:var(--red)"></span></div>
-    <div class="bl-row"><span class="bll">Indkomstskat</span><span class="blv" id="bl-skat" style="color:var(--red)"></span></div>
-    <div class="bl-row" id="bl-timelon-row" style="display:none"><span class="bll">Nødvendig timeløn</span><span class="blv" id="bl-timelon"></span></div>
-  </div>
+<div id="panel-sammenlign" style="display:none">
+<div class="section-label">Sammenlign to indkomster</div>
+<div class="grid2">
+<div class="card"><h3>Indkomst A</h3><div class="input-group"><label for="cmp-a">Brutto</label><div class="input-wrap"><input id="cmp-a" type="number" placeholder="0" min="0"><span class="unit">KR</span></div></div><div class="input-group"><label for="cmp-type-a">Type</label><select id="cmp-type-a"><option value="lon">Løn</option><option value="su">SU</option><option value="dagpenge">Dagpenge</option><option value="pension">Pension</option><option value="bindkomst">B-indkomst</option></select></div><div class="input-group"><label for="cmp-card-a">Skattekort</label><select id="cmp-card-a"><option value="hovedkort">Hovedkort</option><option value="bikort">Bikort</option><option value="frikort">Frikort</option></select></div></div>
+<div class="card"><h3>Indkomst B</h3><div class="input-group"><label for="cmp-b">Brutto</label><div class="input-wrap"><input id="cmp-b" type="number" placeholder="0" min="0"><span class="unit">KR</span></div></div><div class="input-group"><label for="cmp-type-b">Type</label><select id="cmp-type-b"><option value="lon">Løn</option><option value="su">SU</option><option value="dagpenge">Dagpenge</option><option value="pension">Pension</option><option value="bindkomst">B-indkomst</option></select></div><div class="input-group"><label for="cmp-card-b">Skattekort</label><select id="cmp-card-b"><option value="bikort">Bikort</option><option value="hovedkort">Hovedkort</option><option value="frikort">Frikort</option></select></div></div>
+</div>
+<div class="small">Sammenligningen bruger dine fælles skattekort-tal ovenfor. Det er især nyttigt til fx løn vs. SU.</div>
+</div>
 
-  <!-- ── BUDGET ── -->
-  <div class="budget-section" id="budget-section">
-    <div class="budget-header">
-      <div class="section-label" style="border-bottom:none;padding-bottom:0;margin-bottom:0">Månedlige udgifter</div>
-      <button class="budget-add-btn" onclick="tilføjUdgift()">+ Tilføj</button>
-    </div>
+<div id="panel-studerende" style="display:none">
+<div class="section-label">SU + studiejob</div>
+<div class="help">Typisk opsætning: SU på <strong>hovedkort</strong> og studiejob på <strong>bikort</strong>. SKAT beskriver netop dette som standardopsætningen, når du får SU og arbejder ved siden af. </div>
+<div class="grid2">
+<div class="card"><h3>SU</h3><div class="input-group"><label for="student-su">SU pr. måned</label><div class="input-wrap"><input id="student-su" type="number" placeholder="0" min="0"><span class="unit">KR</span></div></div><div class="input-group"><label for="student-su-card">Skattekort</label><select id="student-su-card"><option value="hovedkort" selected>Hovedkort</option><option value="bikort">Bikort</option><option value="frikort">Frikort</option></select></div></div>
+<div class="card"><h3>Studiejob</h3><div class="input-group"><label for="student-job">Løn pr. måned</label><div class="input-wrap"><input id="student-job" type="number" placeholder="0" min="0"><span class="unit">KR</span></div></div><div class="input-group"><label for="student-job-card">Skattekort</label><select id="student-job-card"><option value="bikort" selected>Bikort</option><option value="hovedkort">Hovedkort</option><option value="frikort">Frikort</option></select></div></div>
+</div>
+<div class="help">Indtast din faktiske <strong>trækprocent</strong> og <strong>månedsfradrag</strong> fra TastSelv ovenfor. SU har ikke AM-bidrag; studiejob har normalt 8 % AM-bidrag fra det år, du fylder 18.</div>
+</div>
 
-    <div id="udgifter-liste" style="margin-top:.8rem"></div>
+<button class="btn-primary" onclick="beregn()">Beregn</button>
+<div class="btn-row">
+<button class="btn-secondary" onclick="delLink(this)">⬡ Del link</button>
+<button class="btn-secondary" onclick="exportPDF()">↓ PDF</button>
+<button class="btn-secondary" onclick="exportExcel()">↓ Excel</button>
+<button class="btn-secondary" onclick="nulstil()">↺ Nulstil</button>
+</div>
 
-    <div class="budget-summary" id="budget-summary" style="margin-top:.5rem">
-      <div class="budget-sum-row"><span class="bl">Udbetalt løn</span><span class="bv" id="bs-udbetalt" style="color:var(--accent)"></span></div>
-      <div class="budget-sum-row"><span class="bl">Samlede udgifter</span><span class="bv" id="bs-udgifter" style="color:var(--red)"></span></div>
-      <div class="budget-bar-wrap">
-        <canvas id="budget-canvas" height="16" style="width:100%;display:block;margin-bottom:.6rem"></canvas>
-        <div class="budget-legend" id="budget-legend"></div>
-      </div>
-    </div>
+<div class="result" id="result">
+<div class="explain" id="result-explain"></div>
+<div class="result-row"><span class="label">Brutto</span><span class="value" id="r-brutto"></span></div>
+<div class="result-row"><span class="label">AM-bidrag</span><span class="value negative" id="r-am"></span></div>
+<div class="result-row"><span class="label">Efter AM</span><span class="value" id="r-efter-am"></span></div>
+<div class="result-row" id="r-fradrag-row"><span class="label" id="r-fradrag-label">Månedsfradrag</span><span class="value negative" id="r-fradrag"></span></div>
+<div class="result-row" id="r-skattepligtig-row"><span class="label">Skattepligtigt beløb</span><span class="value" id="r-skattepligtig"></span></div>
+<div class="result-row"><span class="label" id="r-skat-label">Indkomstskat</span><span class="value negative" id="r-skat"></span></div>
+<div class="result-row" id="r-frikort-rest-row" style="display:none"><span class="label">Frikort tilbage efter denne måned</span><span class="value info" id="r-frikort-rest"></span></div>
+<div class="result-row"><span class="label">Effektiv skat</span><span class="value info" id="r-effektiv"></span></div>
+<div class="result-row"><span class="label">Årligt estimeret</span><span class="value" id="r-aarlig" style="color:var(--muted)"></span></div>
+<div class="result-total"><span class="label">Udbetalt / måned</span><span class="value" id="r-udbetalt"></span></div>
+<div class="card" id="ferie-result" style="display:none;margin:0;border:0;border-top:1px solid var(--border)">
+<h3>Feriepenge · separat estimat</h3>
+<div class="mini-row"><span>Brutto 12,5 %</span><span id="fp-brutto"></span></div>
+<div class="mini-row"><span>AM-bidrag</span><span id="fp-am"></span></div>
+<div class="mini-row"><span>Skat</span><span id="fp-skat"></span></div>
+<div class="mini-row"><span>Netto feriepenge</span><span id="fp-netto" class="orange"></span></div>
+<div class="small">Feriepenge indgår ikke i den almindelige månedlige udbetaling. Beskatningen af feriepenge kan afhænge af, hvordan de udbetales, så dette er kun et estimat.</div>
+</div>
+</div>
 
-    <div class="savings-box">
-      <span class="sl" id="savings-label">Tilbage til opsparing</span>
-      <span class="sv" id="savings-val"></span>
-    </div>
-  </div>
+<div class="chart-section" id="chart-section">
+<div class="section-label" style="margin-top:1rem">Fordeling</div>
+<div class="bar-chart">
+<div class="bar-row"><span class="bar-label">Udbetalt</span><div class="bar-track"><div class="bar-fill" id="bar-udbetalt" style="background:var(--accent)"></div></div><span class="bar-val" id="barpct-udbetalt"></span></div>
+<div class="bar-row"><span class="bar-label">Indkomstskat</span><div class="bar-track"><div class="bar-fill" id="bar-skat" style="background:var(--red)"></div></div><span class="bar-val" id="barpct-skat"></span></div>
+<div class="bar-row"><span class="bar-label">AM-bidrag</span><div class="bar-track"><div class="bar-fill" id="bar-am" style="background:var(--blue)"></div></div><span class="bar-val" id="barpct-am"></span></div>
+</div>
+<div class="kpi-grid">
+<div class="kpi"><div class="k">Skat i kr.</div><div class="v" id="kpi-skat"></div></div>
+<div class="kpi"><div class="k">Netto pr. år</div><div class="v" id="kpi-aarsnetto"></div></div>
+<div class="kpi"><div class="k">Skattefri del</div><div class="v" id="kpi-frisk"></div></div>
+</div>
+</div>
+
+<div class="compare-result" id="compare-result"><div class="section-label" style="margin-top:1rem">Sammenligning</div><div class="grid2"><div class="card" id="cmp-col-a"></div><div class="card" id="cmp-col-b"></div></div></div>
+
+<div class="baglaens-result card" id="baglaens-result">
+<h3>Baglæns resultat</h3>
+<div class="mini-row"><span>Nødvendig brutto</span><span id="bl-brutto"></span></div>
+<div class="mini-row"><span>AM-bidrag</span><span id="bl-am" class="negative"></span></div>
+<div class="mini-row"><span>Indkomstskat</span><span id="bl-skat" class="negative"></span></div>
+<div class="mini-row" id="bl-timelon-row" style="display:none"><span>Nødvendig timeløn</span><span id="bl-timelon"></span></div>
+</div>
+
+<div class="student-result" id="student-result">
+<div class="section-label" style="margin-top:1rem">Studerende · samlet</div>
+<div class="grid2"><div class="card" id="student-su-card-result"></div><div class="card" id="student-job-card-result"></div></div>
+<div class="result"><div class="result-row"><span class="label">Samlet brutto</span><span class="value" id="student-total-brutto"></span></div><div class="result-row"><span class="label">Samlet skat + AM</span><span class="value negative" id="student-total-tax"></span></div><div class="result-total"><span class="label">Samlet udbetalt</span><span class="value" id="student-total-net"></span></div></div>
+</div>
+
+<div class="budget-section" id="budget-section">
+<div class="section-label" style="margin-top:1.5rem">Månedligt budget</div>
+<div id="udgifter-liste"></div>
+<button class="btn-secondary" style="margin:0 0 .7rem" onclick="tilføjUdgift()">+ Tilføj udgift</button>
+<div class="card"><div class="mini-row"><span>Udbetalt</span><span id="bs-udbetalt" class="positive"></span></div><div class="mini-row"><span>Samlede udgifter</span><span id="bs-udgifter" class="negative"></span></div></div>
+<div class="savings-box"><span id="savings-label">Tilbage</span><span id="savings-val"></span></div>
+</div>
+
+<div class="footer">
+2026-satser baseret på Skattestyrelsens satser. Beregneren medregner ikke topskat. <br>
+Kilder: <a href="https://skat.dk/borger/hovedkort-bikort-og-frikort" target="_blank" rel="noopener">Hovedkort/bikort/frikort</a> ·
+<a href="https://skat.dk/borger/am-bidrag" target="_blank" rel="noopener">AM-bidrag</a> ·
+<a href="https://skat.dk/borger/fradrag/arbejdsrelaterede-fradrag/beskaeftigelses-og-jobfradrag" target="_blank" rel="noopener">Beskæftigelses-/jobfradrag</a> ·
+<a href="https://skat.dk/borger/unge-og-studerende/su-og-skoleydelse/su-og-skat" target="_blank" rel="noopener">SU og skat</a>
+</div>
 </div>
 
 <script>
-let aktivTab = 'bruttolon';
-let sidsteSkat = null;
-let udgifter = [];
-let nasteId = 1;
+let aktivTab='bruttolon',feriepengeAktiv=false,sidsteSkat=null,udgifter=[],nasteId=1;
 
-const FARVER = ['#5cb8ff','#ffaa5c','#ff5c5c','#c084fc','#34d399','#f472b6','#fbbf24','#60a5fa','#a3e635','#fb923c'];
-const STD_KAT = ['Bolig (husleje/lån)','Mad & dagligvarer','Transport','Telefon & internet','Forsikringer','Fritid & abonnementer'];
+const STD_KAT=['Bolig (husleje/lån)','Mad & dagligvarer','Transport','Telefon & internet','Forsikringer','Fritid & abonnementer'];
+const INCOME={
+  lon:{label:'Løn',am:true,ferie:true,help:'Almindelig løn er AM-bidragspligtig. Beskæftigelses- og jobfradrag indgår normalt i skattekortets månedsfradrag.'},
+  su:{label:'SU',am:false,ferie:false,help:'SU er skattepligtig, men der betales ikke AM-bidrag af SU.'},
+  dagpenge:{label:'Dagpenge',am:true,ferie:false,help:'Dagpenge er AM-bidragspligtige. AM beregnes fra det år, du fylder 18.'},
+  pension:{label:'Pension',am:false,ferie:false,help:'Pension er ikke AM-bidragspligtig.'},
+  bindkomst:{label:'B-indkomst / honorar',am:true,ferie:false,help:'B-indkomst/honorar kan være AM-bidragspligtig; denne beregner behandler den sådan for personer på 18+.'},
+  kontanthjaelp:{label:'Kontanthjælp',am:false,ferie:false,help:'Kontanthjælp er ikke AM-bidragspligtig.'}
+};
 
-window.addEventListener('load', () => {
+window.addEventListener('load',()=>{
   indlaesGemte();
-  const p = new URLSearchParams(location.search);
-  if (p.get('tab'))    skiftTab(p.get('tab'));
-  if (p.get('brutto')) document.getElementById('bruttoløn').value = p.get('brutto');
-  if (p.get('tl'))     document.getElementById('timelon').value   = p.get('tl');
-  if (p.get('t'))      document.getElementById('timer').value     = p.get('t');
-  if (p.get('pf'))     document.getElementById('personfradrag').value = p.get('pf');
-  if (p.get('ks'))     document.getElementById('kommuneskat').value   = p.get('ks');
-  if (p.get('fp')==='1') document.getElementById('feriepenge-check').checked = true;
-  if (p.get('ca'))     document.getElementById('cmp-a').value = p.get('ca');
-  if (p.get('cb'))     document.getElementById('cmp-b').value = p.get('cb');
-  opdaterBrutto();
-  if (p.get('brutto') || p.get('tl') || p.get('ca')) beregn();
+  indlaesUrl();
+  opdaterUI();
+  if(new URLSearchParams(location.search).has('calc')) beregn();
 });
 
-function indlaesGemte() {
-  try {
-    const s = JSON.parse(localStorage.getItem('skatSettings') || '{}');
-    if (s.pf) document.getElementById('personfradrag').value = s.pf;
-    if (s.ks) document.getElementById('kommuneskat').value   = s.ks;
-  } catch(e) {}
-  try {
-    const u = JSON.parse(localStorage.getItem('udgifter') || 'null');
-    if (u && u.length) { udgifter = u; nasteId = Math.max(...u.map(x=>x.id)) + 1; }
-    else STD_KAT.forEach(n => udgifter.push({id:nasteId++, navn:n, beløb:0}));
-  } catch(e) {
-    STD_KAT.forEach(n => udgifter.push({id:nasteId++, navn:n, beløb:0}));
+function val(id){return document.getElementById(id)?.value||''}
+function num(id,def=0){const x=parseFloat(val(id));return Number.isFinite(x)?x:def}
+function kort(){return document.querySelector('input[name="kort"]:checked')?.value||'hovedkort'}
+function alder(){return Math.max(0,num('alder',20))}
+function amPligtig(type){
+  if(alder()<18)return false;
+  return !!INCOME[type]?.am;
+}
+function fmt(n){return (Number(n)||0).toLocaleString('da-DK',{minimumFractionDigits:2,maximumFractionDigits:2})+' kr'}
+function fmtPct(n){return (Number(n)||0).toLocaleString('da-DK',{minimumFractionDigits:1,maximumFractionDigits:1})+'%'}
+
+function opdaterUI(){
+  const type=val('indkomsttype')||'lon';
+  document.getElementById('income-help').textContent=INCOME[type].help;
+  document.getElementById('kort-help').textContent=
+    kort()==='hovedkort'?'Hovedkort: månedsfradraget bruges hos denne udbetaler.'
+    :kort()==='bikort'?'Bikort: hele det beregnede beløb beskattes med trækprocenten — intet månedsfradrag.'
+    :'Frikort: ingen indkomstskat, så længe frikortbeløbet ikke er brugt. Løn er stadig AM-bidragspligtig for personer på 18+.';
+  document.getElementById('maanedsfradrag-group').style.display=kort()==='hovedkort'?'block':'none';
+  document.getElementById('frikort-group').style.display=kort()==='frikort'?'block':'none';
+  const ferie=INCOME[type].ferie;
+  document.getElementById('ferie-row').style.display=ferie?'flex':'none';
+  if(!ferie)feriepengeAktiv=false;
+  opdaterFeriepengeToggle();
+}
+function toggleFeriepenge(){if(!INCOME[val('indkomsttype')||'lon'].ferie)return;feriepengeAktiv=!feriepengeAktiv;opdaterFeriepengeToggle();gem()}
+function opdaterFeriepengeToggle(){document.getElementById('ferie-row').classList.toggle('active',feriepengeAktiv)}
+
+function skiftTab(tab){
+  aktivTab=tab;
+  ['bruttolon','timelon','baglaens','sammenlign','studerende'].forEach(t=>{
+    const p=document.getElementById('panel-'+t);if(p)p.style.display=t===tab?'block':'none';
+  });
+  document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',['bruttolon','timelon','baglaens','sammenlign','studerende'][i]===tab));
+  ['result','chart-section','compare-result','baglaens-result','student-result','budget-section'].forEach(id=>document.getElementById(id).classList.remove('visible'));
+  sidsteSkat=null;
+}
+function opdaterBrutto(){
+  const tl=num('timelon',0),t=num('timer',0),ti=num('tillaeg',0),hint=document.getElementById('brutto-hint');
+  if(tl>0&&t>0){document.getElementById('brutto-hint-val').textContent=fmt(tl*t+ti);hint.style.display='block'}else hint.style.display='none'
+}
+
+function getSettings(){
+  return {type:val('indkomsttype')||'lon', card:kort(), rate:num('traekprocent',38)/100, monthlyDeduction:num('maanedsfradrag',4508)+num('ekstrafradrag',0), frikortLeft:num('frikorttilbage',54100), pensionPct:num('pensionpct',0)};
+}
+
+/*
+  Practical tax-card model:
+  - AM is calculated before other withholding for AM-pligtige income.
+  - Hovedkort uses the monthly deduction.
+  - Bikort uses no deduction.
+  - Frikort uses the remaining annual free amount; AM can still apply to salary.
+  - The tax-card's monthly deduction is the right place for employment/job deduction
+    and other withholding deductions, so they are not double-counted here.
+*/
+function beregnSkat(brutto,settings){
+  const pension=Math.min(Math.max(settings.pensionPct,0),50)/100;
+  const pensionBelob=(settings.type==='lon')?brutto*pension:0;
+  const amBase=Math.max(brutto-pensionBelob,0);
+  const amRate=amPligtig(settings.type)?0.08:0;
+  const am=amBase*amRate;
+  const efterAM=Math.max(amBase-am,0);
+  let fradrag=0, skattepligtig=0, skat=0, frikortUsed=0, frikortRest=null;
+  if(settings.card==='hovedkort'){
+    fradrag=Math.min(settings.monthlyDeduction,efterAM);
+    skattepligtig=Math.max(efterAM-fradrag,0);
+    skat=skattepligtig*settings.rate;
+  }else if(settings.card==='bikort'){
+    skattepligtig=efterAM;
+    skat=skattepligtig*settings.rate;
+  }else{
+    frikortUsed=Math.min(settings.frikortLeft,efterAM);
+    frikortRest=Math.max(settings.frikortLeft-frikortUsed,0);
+    skattepligtig=Math.max(efterAM-frikortUsed,0);
+    skat=skattepligtig*settings.rate;
   }
-  gengiverUdgifter();
-}
-
-function gem() {
-  localStorage.setItem('skatSettings', JSON.stringify({
-    pf: document.getElementById('personfradrag').value,
-    ks: document.getElementById('kommuneskat').value,
-  }));
-  localStorage.setItem('udgifter', JSON.stringify(udgifter));
-}
-
-function skiftTab(tab) {
-  aktivTab = tab;
-  ['bruttolon','timelon','baglaens','sammenlign'].forEach(t =>
-    document.getElementById('panel-'+t).style.display = t===tab ? 'block' : 'none'
-  );
-  document.querySelectorAll('.tab').forEach((el,i) =>
-    el.classList.toggle('active', ['bruttolon','timelon','baglaens','sammenlign'][i]===tab)
-  );
-  document.getElementById('feriepenge-row').style.display =
-    (tab==='baglaens'||tab==='sammenlign') ? 'none' : 'block';
-  document.getElementById('result').classList.remove('visible');
-  document.getElementById('chart-section').classList.remove('visible');
-  document.getElementById('baglaens-result').classList.remove('visible');
-  document.getElementById('compare-result').style.display = 'none';
-  document.getElementById('budget-section').classList.remove('visible');
-  sidsteSkat = null;
-}
-
-function opdaterBrutto() {
-  const tl=parseFloat(document.getElementById('timelon').value);
-  const t =parseFloat(document.getElementById('timer').value);
-  const ti=parseFloat(document.getElementById('tillaeg').value)||0;
-  const hint=document.getElementById('brutto-hint');
-  if (!isNaN(tl)&&!isNaN(t)&&tl>0&&t>0) {
-    document.getElementById('brutto-hint-val').textContent=fmt(tl*t+ti);
-    hint.style.display='block';
-  } else hint.style.display='none';
-}
-
-function fmt(n) { return n.toLocaleString('da-DK',{minimumFractionDigits:2,maximumFractionDigits:2})+' kr'; }
-function fmtPct(n) { return n.toLocaleString('da-DK',{minimumFractionDigits:1,maximumFractionDigits:1})+'%'; }
-
-function beregnSkat(bruttoBase, pf, ks) {
-  const fp = document.getElementById('feriepenge-check').checked ? bruttoBase*0.125 : 0;
-  const brutto=bruttoBase+fp, am=brutto*0.08, efterAM=brutto-am;
-  let udbetalt,fradrag=0,skattepligtig=0,skat=0;
-  if (efterAM>pf) { fradrag=pf; skattepligtig=efterAM-pf; skat=skattepligtig*ks; udbetalt=efterAM-skat; }
-  else udbetalt=efterAM;
-  return {brutto,feriepenge:fp,am,efterAM,fradrag,skattepligtig,skat,udbetalt};
-}
-
-function beregn() {
-  const pf=parseFloat(document.getElementById('personfradrag').value)||5500;
-  const ksPct=parseFloat(document.getElementById('kommuneskat').value)||36;
-  const ks=ksPct/100;
-  gem();
-
-  if (aktivTab==='baglaens') {
-    const onsket=parseFloat(document.getElementById('udbetalt-onsket').value);
-    const blTimer=parseFloat(document.getElementById('baglaens-timer').value);
-    if (isNaN(onsket)||onsket<=0) return;
-    let brutto = (onsket-pf*ks)/(0.92*(1-ks));
-    if (brutto*0.92<=pf) brutto=onsket/0.92;
-    const am=brutto*0.08, skat=brutto-am-onsket;
-    document.getElementById('bl-brutto').textContent=fmt(brutto);
-    document.getElementById('bl-am').textContent=fmt(am);
-    document.getElementById('bl-skat').textContent=fmt(Math.max(skat,0));
-    const btr=document.getElementById('bl-timelon-row');
-    if (!isNaN(blTimer)&&blTimer>0) { document.getElementById('bl-timelon').textContent=fmt(brutto/blTimer)+'/t'; btr.style.display='flex'; }
-    else btr.style.display='none';
-    document.getElementById('baglaens-result').classList.add('visible');
-    return;
+  const udbetalt=Math.max(brutto-pensionBelob-am-skat,0);
+  let feriepenge=null;
+  if(feriepengeAktiv&&settings.type==='lon'){
+    const fpBrutto=brutto*0.125;
+    const fpAm=fpBrutto*(alder()>=18?0.08:0);
+    const fpEfterAm=fpBrutto-fpAm;
+    const fpSkat=fpEfterAm*settings.rate;
+    feriepenge={brutto:fpBrutto,am:fpAm,skat:fpSkat,netto:fpEfterAm-fpSkat};
   }
+  return {brutto,pensionBelob,am,efterAM,fradrag,skattepligtig,skat,udbetalt,frikortUsed,frikortRest,feriepenge};
+}
 
-  if (aktivTab==='sammenlign') {
-    const a=parseFloat(document.getElementById('cmp-a').value);
-    const b=parseFloat(document.getElementById('cmp-b').value);
-    if (isNaN(a)||isNaN(b)||a<=0||b<=0) return;
-    const ra=beregnSkat(a,pf,ks), rb=beregnSkat(b,pf,ks);
-    function col(r,lbl) { return `<div class="compare-col-header">${lbl}</div>
-      <div class="compare-row"><span class="cl">Bruttoløn</span><span class="cv">${fmt(r.brutto)}</span></div>
-      <div class="compare-row"><span class="cl">AM-bidrag</span><span class="cv neg">-${fmt(r.am)}</span></div>
-      <div class="compare-row"><span class="cl">Skat</span><span class="cv neg">-${fmt(r.skat)}</span></div>
-      <div class="compare-row"><span class="cl">Udbetalt</span><span class="cv pos">${fmt(r.udbetalt)}</span></div>
-      <div class="compare-row"><span class="cl">Eff. skat</span><span class="cv">${fmtPct((1-r.udbetalt/r.brutto)*100)}</span></div>
-      <div class="compare-row"><span class="cl">Årligt</span><span class="cv">${fmt(r.udbetalt*12)}</span></div>`; }
-    document.getElementById('cmp-col-a').innerHTML=col(ra,'Løn A');
-    document.getElementById('cmp-col-b').innerHTML=col(rb,'Løn B');
-    document.getElementById('compare-result').style.display='block';
-    return;
+function forklar(settings,r){
+  let s=`${INCOME[settings.type].label} · ${settings.card}`;
+  if(amPligtig(settings.type))s+=` · AM-bidrag 8%`;
+  else s+=` · intet AM-bidrag`;
+  if(settings.card==='hovedkort')s+=` · månedsfradrag ${fmt(settings.monthlyDeduction)}`;
+  if(settings.card==='bikort')s+=` · intet fradrag`;
+  if(settings.card==='frikort')s+=` · frikort tilbage ${fmt(settings.frikortLeft)}`;
+  return s+'.';
+}
+
+function hentBruttoFraTab(){
+  if(aktivTab==='timelon'){
+    const tl=num('timelon'),t=num('timer'),ti=num('tillaeg');
+    if(tl<=0||t<=0)return null;
+    return {brutto:tl*t+ti,timelon:tl,timer:t};
   }
+  const b=num('bruttoløn');
+  return b>0?{brutto:b}:null;
+}
 
-  let bruttoBase;
-  if (aktivTab==='timelon') {
-    const tl=parseFloat(document.getElementById('timelon').value);
-    const t=parseFloat(document.getElementById('timer').value);
-    const ti=parseFloat(document.getElementById('tillaeg').value)||0;
-    if (isNaN(tl)||isNaN(t)||tl<=0||t<=0) return;
-    bruttoBase=tl*t+ti;
-    document.getElementById('r-timelon-row').style.display='flex';
-    document.getElementById('r-timelon-label').textContent=`${tl.toLocaleString('da-DK')} kr/t · ${t.toLocaleString('da-DK')} t${ti>0?' + tillæg':''}`;
-    document.getElementById('r-timelon-val').textContent=fmt(bruttoBase);
-  } else {
-    bruttoBase=parseFloat(document.getElementById('bruttoløn').value);
-    if (isNaN(bruttoBase)||bruttoBase<=0) return;
-    document.getElementById('r-timelon-row').style.display='none';
-  }
-
-  const r=beregnSkat(bruttoBase,pf,ks);
-  sidsteSkat=r;
-
-  if (r.feriepenge>0) { document.getElementById('r-feriepenge-row').style.display='flex'; document.getElementById('r-feriepenge-val').textContent='+'+fmt(r.feriepenge); }
-  else document.getElementById('r-feriepenge-row').style.display='none';
-
-  document.getElementById('r-brutto').textContent   =fmt(r.brutto);
-  document.getElementById('r-am').textContent       ='-'+fmt(r.am);
-  document.getElementById('r-efter-am').textContent =fmt(r.efterAM);
-  document.getElementById('r-udbetalt').textContent =fmt(r.udbetalt);
-  document.getElementById('r-effektiv').textContent =fmtPct((1-r.udbetalt/r.brutto)*100);
-  document.getElementById('r-aarlig').textContent   =fmt(r.udbetalt*12);
-
-  const fr=document.getElementById('fradrag-rows');
-  if (r.fradrag>0) {
-    document.getElementById('r-fradrag').textContent          ='-'+fmt(r.fradrag);
-    document.getElementById('r-skattepligtig').textContent    =fmt(r.skattepligtig);
-    document.getElementById('r-skat-label').textContent       =`Indkomstskat (${ksPct}%)`;
-    document.getElementById('r-efter-skat-label').textContent =`Efter skat (${ksPct}%)`;
-    document.getElementById('r-skat').textContent             ='-'+fmt(r.skat);
-    const es=r.skattepligtig-r.skat;
-    document.getElementById('r-efter-skat').textContent       =fmt(es);
-    document.getElementById('r-efter-skat-fradrag').textContent=fmt(es+r.fradrag);
-    fr.style.display='block';
-  } else fr.style.display='none';
-
+function renderResult(r,settings){
+  document.getElementById('result-explain').textContent=forklar(settings,r);
+  document.getElementById('r-brutto').textContent=fmt(r.brutto);
+  document.getElementById('r-am').textContent=r.am?'-'+fmt(r.am):fmt(0);
+  document.getElementById('r-efter-am').textContent=fmt(r.efterAM);
+  const frRow=document.getElementById('r-fradrag-row');
+  if(settings.card==='hovedkort'){
+    frRow.style.display='flex';document.getElementById('r-fradrag-label').textContent='Månedsfradrag';document.getElementById('r-fradrag').textContent='-'+fmt(r.fradrag);
+  }else{frRow.style.display='none'}
+  document.getElementById('r-skattepligtig').textContent=fmt(r.skattepligtig);
+  document.getElementById('r-skattepligtig-row').style.display='flex';
+  document.getElementById('r-skat-label').textContent=`Indkomstskat (${fmtPct(settings.rate*100)})`;
+  document.getElementById('r-skat').textContent='-'+fmt(r.skat);
+  const frRest=document.getElementById('r-frikort-rest-row');
+  if(settings.card==='frikort'){frRest.style.display='flex';document.getElementById('r-frikort-rest').textContent=fmt(r.frikortRest)}
+  else frRest.style.display='none';
+  const eff=r.brutto>0?(1-r.udbetalt/r.brutto)*100:0;
+  document.getElementById('r-effektiv').textContent=fmtPct(eff);
+  document.getElementById('r-aarlig').textContent=fmt(r.udbetalt*12);
+  document.getElementById('r-udbetalt').textContent=fmt(r.udbetalt);
+  const fp=document.getElementById('ferie-result');
+  if(r.feriepenge){fp.style.display='block';document.getElementById('fp-brutto').textContent=fmt(r.feriepenge.brutto);document.getElementById('fp-am').textContent='-'+fmt(r.feriepenge.am);document.getElementById('fp-skat').textContent='-'+fmt(r.feriepenge.skat);document.getElementById('fp-netto').textContent=fmt(r.feriepenge.netto)}
+  else fp.style.display='none';
   document.getElementById('result').classList.add('visible');
-
-  const pu=(r.udbetalt/r.brutto)*100, ps=(r.skat/r.brutto)*100, pa=(r.am/r.brutto)*100;
-  document.getElementById('bar-udbetalt').style.width=pu+'%';
-  document.getElementById('bar-skat').style.width    =ps+'%';
-  document.getElementById('bar-am').style.width      =pa+'%';
-  document.getElementById('barpct-udbetalt').textContent=fmtPct(pu);
-  document.getElementById('barpct-skat').textContent    =fmtPct(ps);
-  document.getElementById('barpct-am').textContent      =fmtPct(pa);
+  const pu=r.brutto?(r.udbetalt/r.brutto*100):0,ps=r.brutto?(r.skat/r.brutto*100):0,pa=r.brutto?(r.am/r.brutto*100):0;
+  ['udbetalt','skat','am'].forEach(k=>{document.getElementById('bar-'+k).style.width=(k==='udbetalt'?pu:k==='skat'?ps:pa)+'%';document.getElementById('barpct-'+k).textContent=fmtPct(k==='udbetalt'?pu:k==='skat'?ps:pa)});
+  document.getElementById('kpi-skat').textContent=fmt(r.skat+r.am);
+  document.getElementById('kpi-aarsnetto').textContent=fmt(r.udbetalt*12);
+  document.getElementById('kpi-frisk').textContent=settings.card==='frikort'?fmt(r.frikortUsed):settings.card==='hovedkort'?fmt(r.fradrag):'0,00 kr';
   document.getElementById('chart-section').classList.add('visible');
-
+  sidsteSkat={...r,settings};
   document.getElementById('budget-section').classList.add('visible');
   opdaterBudget();
 }
 
-// ── Budget ──
-function tilføjUdgift() {
-  udgifter.push({id:nasteId++, navn:'', beløb:0});
-  gengiverUdgifter();
+function beregn(){
   gem();
+  opdaterUI();
+  if(aktivTab==='baglaens'){beregnBaglaens();return}
+  if(aktivTab==='sammenlign'){beregnSammenlign();return}
+  if(aktivTab==='studerende'){beregnStuderende();return}
+  const src=hentBruttoFraTab();if(!src)return alert('Indtast et gyldigt beløb.');
+  const settings=getSettings();const r=beregnSkat(src.brutto,settings);
+  if(src.timelon){document.getElementById('result-explain').textContent=`${src.timelon.toLocaleString('da-DK')} kr/t · ${src.timer.toLocaleString('da-DK')} t/måned`+' · '+forklar(settings,r)}
+  renderResult(r,settings);
 }
 
-function sletUdgift(id) {
-  udgifter=udgifter.filter(u=>u.id!==id);
-  gengiverUdgifter();
-  opdaterBudget();
-  gem();
+function beregnBaglaens(){
+  const ønsket=num('udbetalt-onsket');if(ønsket<=0)return alert('Indtast ønsket udbetalt.');
+  const settings=getSettings();
+  let lo=0,hi=Math.max(10000,ønsket*3+10000);
+  for(let i=0;i<80;i++){const mid=(lo+hi)/2;const r=beregnSkat(mid,settings);if(r.udbetalt<ønsket)lo=mid;else hi=mid}
+  const brutto=hi,r=beregnSkat(brutto,settings);
+  document.getElementById('bl-brutto').textContent=fmt(brutto);
+  document.getElementById('bl-am').textContent='-'+fmt(r.am);
+  document.getElementById('bl-skat').textContent='-'+fmt(r.skat);
+  const timer=num('baglaens-timer'),row=document.getElementById('bl-timelon-row');
+  if(timer>0){row.style.display='flex';document.getElementById('bl-timelon').textContent=fmt(brutto/timer)+'/t'}else row.style.display='none';
+  document.getElementById('baglaens-result').classList.add('visible');sidsteSkat={...r,settings};
 }
 
-function opdaterUdgift(id, felt, val) {
-  const u=udgifter.find(x=>x.id===id);
-  if (u) u[felt]=felt==='beløb'?parseFloat(val)||0:val;
-  opdaterBudget();
-  gem();
+function cmpCard(card,brutto,type){
+  const base=getSettings();
+  const s={...base,card,type};
+  if(card==='hovedkort'&&base.card!=='hovedkort')s.monthlyDeduction=base.monthlyDeduction;
+  if(card==='frikort')s.frikortLeft=base.frikortLeft;
+  return beregnSkat(brutto,s);
+}
+function compareCol(lbl,r,type,card){
+  return `<h3>${lbl} · ${INCOME[type]?.label||type}</h3>
+  <div class="mini-row"><span>Skattekort</span><span>${card}</span></div>
+  <div class="mini-row"><span>Brutto</span><span>${fmt(r.brutto)}</span></div>
+  <div class="mini-row"><span>AM-bidrag</span><span>-${fmt(r.am)}</span></div>
+  <div class="mini-row"><span>Skat</span><span>-${fmt(r.skat)}</span></div>
+  <div class="mini-row"><span>Udbetalt</span><span class="positive">${fmt(r.udbetalt)}</span></div>
+  <div class="mini-row"><span>Effektiv skat</span><span>${fmtPct((1-r.udbetalt/r.brutto)*100)}</span></div>`;
+}
+function beregnSammenlign(){
+  const a=num('cmp-a'),b=num('cmp-b');if(a<=0||b<=0)return alert('Indtast begge beløb.');
+  const sa=cmpCard(val('cmp-card-a'),a,val('cmp-type-a')),sb=cmpCard(val('cmp-card-b'),b,val('cmp-type-b'));
+  document.getElementById('cmp-col-a').innerHTML=compareCol('Indkomst A',sa,val('cmp-type-a'),val('cmp-card-a'));
+  document.getElementById('cmp-col-b').innerHTML=compareCol('Indkomst B',sb,val('cmp-type-b'),val('cmp-card-b'));
+  document.getElementById('compare-result').classList.add('visible');
 }
 
-function gengiverUdgifter() {
-  document.getElementById('udgifter-liste').innerHTML = udgifter.map((u,i) => `
-    <div class="budget-item">
-      <input type="text" placeholder="Kategori" value="${u.navn.replace(/"/g,'&quot;')}"
-        oninput="opdaterUdgift(${u.id},'navn',this.value)">
-      <input type="number" placeholder="0" value="${u.beløb||''}" min="0" step="1"
-        oninput="opdaterUdgift(${u.id},'beløb',this.value)">
-      <button class="del-btn" onclick="sletUdgift(${u.id})">×</button>
-    </div>`).join('');
+function beregnStuderende(){
+  const su=num('student-su'),job=num('student-job');if(su<0||job<0||(su===0&&job===0))return alert('Indtast SU og/eller studiejob.');
+  const suCard=val('student-su-card'),jobCard=val('student-job-card');
+  const cards=[suCard,jobCard];
+  if(cards.filter(x=>x==='hovedkort').length>1)return alert('Et hovedkort må kun bruges af én udbetaler. Vælg fx hovedkort til SU og bikort til studiejob.');
+  if(cards.filter(x=>x==='frikort').length>1)return alert('Frikortets beløb er fælles på tværs af udbetalere. Brug kun frikort på én af de to her, eller beregn dem samlet med en anden opsætning.');
+  const base=getSettings();
+  let sharedFree=base.frikortLeft;
+  function studentCalc(amount,type,card){
+    const local={...base,type,card};
+    if(card==='frikort')local.frikortLeft=sharedFree;
+    const r=beregnSkat(amount,local);
+    if(card==='frikort')sharedFree=r.frikortRest;
+    return r;
+  }
+  const sr=studentCalc(su,'su',suCard),jr=studentCalc(job,'lon',jobCard);
+  document.getElementById('student-su-card-result').innerHTML=`<h3>SU</h3><div class="mini-row"><span>Brutto</span><span>${fmt(sr.brutto)}</span></div><div class="mini-row"><span>AM-bidrag</span><span>${fmt(sr.am)}</span></div><div class="mini-row"><span>Skat</span><span>-${fmt(sr.skat)}</span></div><div class="mini-row"><span>Udbetalt</span><span class="positive">${fmt(sr.udbetalt)}</span></div>`;
+  document.getElementById('student-job-card-result').innerHTML=`<h3>Studiejob</h3><div class="mini-row"><span>Brutto</span><span>${fmt(jr.brutto)}</span></div><div class="mini-row"><span>AM-bidrag</span><span>-${fmt(jr.am)}</span></div><div class="mini-row"><span>Skat</span><span>-${fmt(jr.skat)}</span></div><div class="mini-row"><span>Udbetalt</span><span class="positive">${fmt(jr.udbetalt)}</span></div>`;
+  const totalBrutto=su+job,totalNet=sr.udbetalt+jr.udbetalt;
+  document.getElementById('student-total-brutto').textContent=fmt(totalBrutto);
+  document.getElementById('student-total-tax').textContent='-'+fmt(sr.skat+jr.skat+sr.am+jr.am);
+  document.getElementById('student-total-net').textContent=fmt(totalNet);
+  document.querySelector('#student-result .result').classList.add('visible');
+  document.getElementById('student-result').classList.add('visible');
+  sidsteSkat={brutto:totalBrutto,udbetalt:totalNet,skat:sr.skat+jr.skat,am:sr.am+jr.am,settings:base};
 }
 
-function opdaterBudget() {
-  if (!sidsteSkat) return;
-  const udbetalt=sidsteSkat.udbetalt;
-  const samlet=udgifter.reduce((s,u)=>s+(u.beløb||0),0);
-  const tilbage=udbetalt-samlet;
-
-  document.getElementById('bs-udbetalt').textContent=fmt(udbetalt);
-  document.getElementById('bs-udgifter').textContent='-'+fmt(samlet);
-
-  const sv=document.getElementById('savings-val');
-  sv.textContent=fmt(Math.abs(tilbage));
-  sv.style.color=tilbage>=0?'var(--accent)':'var(--red)';
+function tilføjUdgift(){udgifter.push({id:nasteId++,navn:'',beløb:0});gengiverUdgifter();gem()}
+function sletUdgift(id){udgifter=udgifter.filter(x=>x.id!==id);gengiverUdgifter();opdaterBudget();gem()}
+function opdaterUdgift(id,felt,valv){const u=udgifter.find(x=>x.id===id);if(u)u[felt]=felt==='beløb'?(parseFloat(valv)||0):valv;opdaterBudget();gem()}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
+function gengiverUdgifter(){document.getElementById('udgifter-liste').innerHTML=udgifter.map(u=>`<div class="budget-item"><input type="text" value="${esc(u.navn||'')}" placeholder="Kategori" oninput="opdaterUdgift(${u.id},'navn',this.value)"><input type="number" value="${u.beløb||''}" placeholder="0" min="0" oninput="opdaterUdgift(${u.id},'beløb',this.value)"><button class="del-btn" onclick="sletUdgift(${u.id})">×</button></div>`).join('')}
+function opdaterBudget(){
+  if(!sidsteSkat)return;
+  const u=udgifter.reduce((s,x)=>s+(x.beløb||0),0),net=sidsteSkat.udbetalt||0,tilbage=net-u;
+  document.getElementById('bs-udbetalt').textContent=fmt(net);document.getElementById('bs-udgifter').textContent='-'+fmt(u);
   document.getElementById('savings-label').textContent=tilbage>=0?'Tilbage til opsparing':'Underskud';
-  document.querySelector('.savings-box').style.borderColor=tilbage>=0?'var(--accent)':'var(--red)';
-
-  // Canvas stacked bar
-  const canvas=document.getElementById('budget-canvas');
-  const dpr=window.devicePixelRatio||1;
-  const W=canvas.offsetWidth||480;
-  canvas.width=W*dpr; canvas.height=16*dpr;
-  const ctx=canvas.getContext('2d');
-  ctx.scale(dpr,dpr);
-  ctx.clearRect(0,0,W,16);
-  const total=udbetalt||1;
-  let x=0;
-  udgifter.forEach((u,i)=>{
-    if (!u.beløb) return;
-    const w=Math.min((u.beløb/total)*W, W-x);
-    ctx.fillStyle=FARVER[i%FARVER.length];
-    ctx.fillRect(x,0,w,16);
-    x+=w;
-  });
-  if (tilbage>0&&x<W) { ctx.fillStyle='#c8f135'; ctx.fillRect(x,0,W-x,16); }
-
-  // Legend
-  document.getElementById('budget-legend').innerHTML =
-    udgifter.filter(u=>u.beløb>0).map((u,i)=>`
-      <span class="leg-item">
-        <span class="leg-dot" style="background:${FARVER[i%FARVER.length]}"></span>
-        ${u.navn||'–'} <span style="color:var(--text);margin-left:.2rem">${fmt(u.beløb)}</span>
-      </span>`).join('')
-    +(tilbage>0?`<span class="leg-item"><span class="leg-dot" style="background:var(--accent)"></span>Opsparing <span style="color:var(--accent);margin-left:.2rem">${fmt(tilbage)}</span></span>`:'');
+  document.getElementById('savings-val').textContent=fmt(Math.abs(tilbage));document.getElementById('savings-val').style.color=tilbage>=0?'var(--accent)':'var(--red)';
 }
-
-// ── Del link ──
-function delLink(btn) {
-  const p=new URLSearchParams();
-  p.set('tab',aktivTab); p.set('pf',document.getElementById('personfradrag').value); p.set('ks',document.getElementById('kommuneskat').value);
-  if (document.getElementById('feriepenge-check').checked) p.set('fp','1');
-  if (aktivTab==='bruttolon') p.set('brutto',document.getElementById('bruttoløn').value);
-  if (aktivTab==='timelon')   { p.set('tl',document.getElementById('timelon').value); p.set('t',document.getElementById('timer').value); }
-  if (aktivTab==='sammenlign'){ p.set('ca',document.getElementById('cmp-a').value); p.set('cb',document.getElementById('cmp-b').value); }
-  navigator.clipboard.writeText(location.origin+location.pathname+'?'+p.toString()).then(()=>{
-    btn.textContent='✓ Kopieret'; btn.classList.add('copied');
-    setTimeout(()=>{ btn.textContent='⬡ Del link'; btn.classList.remove('copied'); },2000);
-  });
+function gem(){
+  localStorage.setItem('skatSettings',JSON.stringify({
+    type:val('indkomsttype'),alder:val('alder'),kort:kort(),rate:val('traekprocent'),pf:val('maanedsfradrag'),ekstra:val('ekstrafradrag'),frikort:val('frikorttilbage'),pension:val('pensionpct'),fp:feriepengeAktiv
+  }));
+  localStorage.setItem('udgifter',JSON.stringify(udgifter));
 }
-
-// ── Export PDF ──
-function exportPDF() {
-  if (!sidsteSkat) { alert('Beregn skat først.'); return; }
-  const {jsPDF}=window.jspdf;
-  const doc=new jsPDF({unit:'mm',format:'a4'});
-  const r=sidsteSkat;
-  const ksPct=parseFloat(document.getElementById('kommuneskat').value)||36;
-  const dato=new Date().toLocaleDateString('da-DK');
-  const GRN=[200,241,53],RED=[255,92,92],BLU=[92,184,255],DRK=[14,14,15],GRY=[42,42,46],LGT=[200,200,200];
-
-  doc.setFillColor(...DRK); doc.rect(0,0,210,297,'F');
-  doc.setFillColor(...GRN); doc.rect(0,0,210,22,'F');
-  doc.setFont('helvetica','bold'); doc.setFontSize(13); doc.setTextColor(...DRK);
-  doc.text('SKATTEBEREGNER',14,14);
-  doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.text(`Genereret ${dato}`,196,14,{align:'right'});
-
-  let y=30;
-  function sek(txt) {
-    y+=2; doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...GRN);
-    doc.text(txt.toUpperCase(),14,y); y+=4;
-    doc.setDrawColor(...GRY); doc.line(14,y,196,y); y+=5;
-  }
-  function rad(lbl,val,fc=LGT,bold=false) {
-    doc.setFont('helvetica',bold?'bold':'normal'); doc.setFontSize(9);
-    doc.setTextColor(110,110,110); doc.text(lbl,14,y);
-    doc.setTextColor(...fc); doc.text(val,196,y,{align:'right'}); y+=6.2;
-  }
-  function grøn(lbl,val) {
-    y+=1; doc.setFillColor(...GRN); doc.roundedRect(14,y,182,9,1,1,'F');
-    doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...DRK);
-    doc.text(lbl,18,y+6); doc.text(val,190,y+6,{align:'right'}); y+=14;
-  }
-
-  sek('Skatteberegning');
-  rad('Bruttoløn',fmt(r.brutto));
-  rad('AM-bidrag (8%)','-'+fmt(r.am),RED);
-  rad('Efter AM-bidrag',fmt(r.efterAM));
-  if (r.fradrag>0) {
-    rad('Personfradrag','-'+fmt(r.fradrag),RED);
-    rad('Skattepligtig indkomst',fmt(r.skattepligtig));
-    rad(`Indkomstskat (${ksPct}%)`,'-'+fmt(r.skat),RED);
-    const es=r.skattepligtig-r.skat;
-    rad('Efter skat',fmt(es));
-    rad('Efter skat + fradrag',fmt(es+r.fradrag),[...GRN]);
-  }
-  rad('Effektiv skatteprocent',fmtPct((1-r.udbetalt/r.brutto)*100),BLU);
-  rad('Årlig udbetalt',fmt(r.udbetalt*12),[160,160,160]);
-  grøn('UDBETALT / MÅNED',fmt(r.udbetalt));
-
-  const samlet=udgifter.reduce((s,u)=>s+(u.beløb||0),0);
-  if (samlet>0) {
-    sek('Månedligt budget');
-    udgifter.filter(u=>u.beløb>0).forEach(u=>rad(u.navn||'–','-'+fmt(u.beløb),RED));
-    y+=1; doc.setDrawColor(...GRY); doc.line(14,y,196,y); y+=5;
-    rad('Samlede udgifter','-'+fmt(samlet),RED,true);
-    const tilbage=r.udbetalt-samlet;
-    const fc=tilbage>=0?GRN:RED;
-    y+=1; doc.setFillColor(...fc); doc.roundedRect(14,y,182,9,1,1,'F');
-    doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...DRK);
-    doc.text(tilbage>=0?'OPSPARING':'UNDERSKUD',18,y+6);
-    doc.text(fmt(Math.abs(tilbage)),190,y+6,{align:'right'}); y+=14;
-  }
-
-  doc.save('skatteberegner.pdf');
+function indlaesGemte(){
+  try{
+    const s=JSON.parse(localStorage.getItem('skatSettings')||'{}');
+    if(s.type)document.getElementById('indkomsttype').value=s.type;
+    if(s.alder)document.getElementById('alder').value=s.alder;
+    if(s.rate)document.getElementById('traekprocent').value=s.rate;
+    if(s.pf)document.getElementById('maanedsfradrag').value=s.pf;
+    if(s.ekstra)document.getElementById('ekstrafradrag').value=s.ekstra;
+    if(s.frikort)document.getElementById('frikorttilbage').value=s.frikort;
+    if(s.pension)document.getElementById('pensionpct').value=s.pension;
+    if(s.kort){const e=document.querySelector(`input[name="kort"][value="${s.kort}"]`);if(e)e.checked=true}
+    if(typeof s.fp==='boolean')feriepengeAktiv=s.fp;
+  }catch(e){}
+  try{
+    const u=JSON.parse(localStorage.getItem('udgifter')||'null');
+    if(Array.isArray(u)&&u.length){udgifter=u;nasteId=Math.max(...u.map(x=>x.id||0))+1}else STD_KAT.forEach(n=>udgifter.push({id:nasteId++,navn:n,beløb:0}));
+  }catch(e){STD_KAT.forEach(n=>udgifter.push({id:nasteId++,navn:n,beløb:0}))}
+  gengiverUdgifter();
 }
-
-// ── Export Excel ──
-function exportExcel() {
-  if (!sidsteSkat) { alert('Beregn skat først.'); return; }
-  const r=sidsteSkat;
-  const ksPct=parseFloat(document.getElementById('kommuneskat').value)||36;
-  const wb=XLSX.utils.book_new();
-
-  const s1=[
-    ['SKATTEBEREGNING',''],['',''],['Post','Beløb (kr)'],
-    ['Bruttoløn',r.brutto],['AM-bidrag (8%)',-r.am],['Efter AM-bidrag',r.efterAM],
-  ];
-  if (r.fradrag>0) {
-    s1.push(['Personfradrag',-r.fradrag],['Skattepligtig indkomst',r.skattepligtig],
-      [`Indkomstskat (${ksPct}%)`,-r.skat]);
-    const es=r.skattepligtig-r.skat;
-    s1.push(['Efter skat',es],['Efter skat + fradrag',es+r.fradrag]);
-  }
-  s1.push(['Effektiv skatteprocent (%)',parseFloat(((1-r.udbetalt/r.brutto)*100).toFixed(1))],
-    ['Udbetalt / måned',r.udbetalt],['Udbetalt / år',r.udbetalt*12]);
-  const ws1=XLSX.utils.aoa_to_sheet(s1);
-  ws1['!cols']=[{wch:30},{wch:16}];
-  XLSX.utils.book_append_sheet(wb,ws1,'Skatteberegning');
-
-  const samlet=udgifter.reduce((s,u)=>s+(u.beløb||0),0);
-  const tilbage=r.udbetalt-samlet;
-  const s2=[
-    ['BUDGET',''],['',''],['Kategori','Beløb (kr)'],
-    ...udgifter.map(u=>[u.navn||'–',u.beløb||0]),
-    ['',''],['Samlede udgifter',samlet],
-    ['Udbetalt løn',r.udbetalt],
-    [tilbage>=0?'Tilbage til opsparing':'Underskud',tilbage],
-  ];
-  const ws2=XLSX.utils.aoa_to_sheet(s2);
-  ws2['!cols']=[{wch:30},{wch:16}];
-  XLSX.utils.book_append_sheet(wb,ws2,'Budget');
-
-  XLSX.writeFile(wb,'skatteberegner.xlsx');
+function indlaesUrl(){
+  const p=new URLSearchParams(location.search);
+  if(p.get('tab'))skiftTab(p.get('tab'));
+  const map={type:'indkomsttype',age:'alder',rate:'traekprocent',pf:'maanedsfradrag',extra:'ekstrafradrag',free:'frikorttilbage',pension:'pension',brutto:'bruttoløn',tl:'timelon',t:'timer',ti:'tillaeg',want:'udbetalt-onsket',blt:'baglaens-timer',a:'cmp-a',b:'cmp-b'};
+  Object.entries(map).forEach(([k,id])=>{if(p.has(k)&&document.getElementById(id))document.getElementById(id).value=p.get(k)});
+  if(p.get('card')){const e=document.querySelector(`input[name="kort"][value="${p.get('card')}"]`);if(e)e.checked=true}
+  if(p.get('fp')==='1')feriepengeAktiv=true;
 }
-
-// ── Nulstil ──
-function nulstil() {
-  ['bruttoløn','timelon','timer','tillaeg','udbetalt-onsket','baglaens-timer','cmp-a','cmp-b']
-    .forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
-  document.getElementById('feriepenge-check').checked=false;
-  ['result','chart-section','budget-section'].forEach(id=>document.getElementById(id).classList.remove('visible'));
-  document.getElementById('baglaens-result').classList.remove('visible');
-  document.getElementById('compare-result').style.display='none';
-  document.getElementById('brutto-hint').style.display='none';
-  sidsteSkat=null;
-  history.replaceState(null,'',location.pathname);
+function delLink(btn){
+  const p=new URLSearchParams();p.set('calc','1');p.set('tab',aktivTab);p.set('type',val('indkomsttype'));p.set('age',val('alder'));p.set('card',kort());p.set('rate',val('traekprocent'));p.set('pf',val('maanedsfradrag'));p.set('extra',val('ekstrafradrag'));p.set('free',val('frikorttilbage'));p.set('pension',val('pensionpct'));
+  if(feriepengeAktiv)p.set('fp','1');
+  const ids={bruttolon:['brutto'],timelon:['tl','t','ti'],baglaens:['want','blt'],sammenlign:['a','b']};
+  const vals={brutto:val('bruttoløn'),tl:val('timelon'),t:val('timer'),ti:val('tillaeg'),want:val('udbetalt-onsket'),blt:val('baglaens-timer'),a:val('cmp-a'),b:val('cmp-b')};
+  (ids[aktivTab]||[]).forEach(k=>p.set(k,vals[k]));
+  navigator.clipboard.writeText(location.origin+location.pathname+'?'+p.toString()).then(()=>{btn.textContent='✓ Kopieret';setTimeout(()=>btn.textContent='⬡ Del link',1600)});
 }
-
-document.addEventListener('keydown', e=>{ if(e.key==='Enter') beregn(); });
+function nulstil(){
+  ['bruttoløn','timelon','timer','tillaeg','udbetalt-onsket','baglaens-timer','cmp-a','cmp-b','student-su','student-job'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=''});
+  document.getElementById('alder').value='20';document.getElementById('traekprocent').value='38';document.getElementById('maanedsfradrag').value='4508';document.getElementById('ekstrafradrag').value='0';document.getElementById('frikorttilbage').value='54100';document.getElementById('pensionpct').value='0';
+  document.getElementById('kort-hoved').checked=true;document.getElementById('indkomsttype').value='lon';feriepengeAktiv=false;opdaterUI();skiftTab('bruttolon');sidsteSkat=null;history.replaceState(null,'',location.pathname);
+}
+function exportExcel(){
+  if(!sidsteSkat)return alert('Beregn først.');
+  const r=sidsteSkat,wb=XLSX.utils.book_new();
+  const rows=[['SKATTEBEREGNER 2026',''],['Indkomsttype',r.settings?INCOME[r.settings.type].label:''],['Skattekort',r.settings?.card||''],['Brutto',r.brutto],['AM-bidrag',-(r.am||0)],['Skat',-(r.skat||0)],['Udbetalt',r.udbetalt],['Årlig estimeret',r.udbetalt*12]];
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rows),'Skat');XLSX.writeFile(wb,'skatteberegner-2026.xlsx');
+}
+function exportPDF(){
+  if(!sidsteSkat)return alert('Beregn først.');
+  const {jsPDF}=window.jspdf,doc=new jsPDF({unit:'mm',format:'a4'});
+  const r=sidsteSkat;doc.setFillColor(14,14,15);doc.rect(0,0,210,297,'F');doc.setFillColor(200,241,53);doc.rect(0,0,210,22,'F');
+  doc.setTextColor(14,14,15);doc.setFont('helvetica','bold');doc.setFontSize(13);doc.text('SKATTEBEREGNER 2026',14,14);
+  let y=32;doc.setTextColor(200,200,200);doc.setFontSize(9);
+  const row=(a,b)=>{doc.text(a,14,y);doc.text(b,196,y,{align:'right'});y+=7};
+  row('Indkomsttype',INCOME[r.settings.type].label);row('Skattekort',r.settings.card);row('Brutto',fmt(r.brutto));row('AM-bidrag','-'+fmt(r.am));row('Indkomstskat','-'+fmt(r.skat));row('Effektiv skat',fmtPct((1-r.udbetalt/r.brutto)*100));y+=3;doc.setTextColor(200,241,53);doc.setFont('helvetica','bold');doc.text('UDBETALT / MÅNED',14,y);doc.text(fmt(r.udbetalt),196,y,{align:'right'});doc.save('skatteberegner-2026.pdf');
+}
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&!['INPUT','SELECT'].includes(document.activeElement.tagName))beregn()});
 </script>
 </body>
 </html>
