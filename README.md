@@ -2,6 +2,8 @@
 
 En enkel skatteberegner i ren HTML, CSS og JavaScript.
 
+**Live:** https://williamxx7.github.io/Dansk_skat_beregner/
+
 ## Funktioner
 
 - Beregning af dansk skat
